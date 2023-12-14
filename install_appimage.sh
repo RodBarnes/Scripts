@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-#bash ~/Scripts/install_appimage.sh joplin Joplin-2.13.8
+# This has been tested on Fedora 39 Cinnamon and works well.
+# It should work under Ubuntu and downstream with little or no changes.
 
 DIR=$(dirname $(readlink -f $0))
 #echo "DIR=${DIR}"

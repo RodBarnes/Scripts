@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Common module specifying names for terminal color codes
+# for reference in other scripts.
+
 NOCOLOR='\033[0m' # No Color
 GREEN='\033[0;32m' # Green
 LTGREEN='\033[1;32m' # Light Green

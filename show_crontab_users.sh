@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 # System-wide crontab file and cron job directory. Change these for your system.
+# All credit to 'Benjamin W' as found on this StackExhange page:
+# https://stackoverflow.com/questions/134906/how-do-i-list-all-cron-jobs-for-all-users
+
 CRONTAB='/etc/crontab'
 CRONDIR='/etc/cron.d'
 
