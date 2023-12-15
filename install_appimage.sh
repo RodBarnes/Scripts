@@ -28,14 +28,13 @@ APPFILE=$2
 USER=$(whoami)
 APPIMAGE=$APPFILE
 
-if [ ! -f /home/$USER/Downloads/$APPFILE ]; then
-  if [ -f /home/$USER/Downloads/$APPFILE.AppImage ]; then
-      APPIMAGE=$APPFILE
-    else
-      printx "Unable to locate specified '$APPFILE' or '$APPFILE.AppImage' in '/home/$USER/Downloads/'"
-    exit
-  else
+if [ -f /home/$USER/Downloads/$APPFILE ]; then
     APPIMAGE=$(basename $APPFILE)
+elif [ -f /home/$USER/Downloads/$APPFILE.AppImage ]; then
+    APPIMAGE=$APPFILE
+else
+    printx "Unable to locate specified '$APPFILE' or '$APPFILE.AppImage' in '/home/$USER/Downloads/'"
+    exit
 fi
 
 if [ -f /usr/local/bin/$COMMAND ]; then
@@ -48,8 +47,8 @@ printx "Installing app..."
 sudo mkdir /opt/$COMMAND
 sudo mv /home/$USER/Downloads/$APPIMAGE.AppImage /opt/$COMMAND
 sudo chmod +x /opt/$COMMAND/$APPIMAGE.AppImage
-sudo chown root ./$APPIMAGE.AppImage
-sudo chgrp root ./$APPIMAGE.AppImage
+sudo chown root /opt/$COMMAND/$APPIMAGE.AppImage
+sudo chgrp root /opt/$COMMAND/$APPIMAGE.AppImage
 sudo ln -s /opt/$COMMAND/$APPIMAGE.AppImage /usr/local/bin/$COMMAND
 
 # Install in menu
