@@ -60,7 +60,7 @@ sudo cp ./squashfs-root/.DirIcon .
 DESKTOPPATH=$(ls ./squashfs-root/*.desktop)
 sudo sed -i "s|Exec=.*|Exec=$COMMAND|g" $DESKTOPPATH
 sudo sed -i "s|Icon=.*|Icon=/opt/$COMMAND/.DirIcon|g" $DESKTOPPATH
-sudo desktop-file-install --dir=/usr/share/applications $DESKTOPPATH
+sudo desktop-file-install --dir=/usr/local/share/applications $DESKTOPPATH
 sudo update-desktop-database
 sudo rm -rf ./squashfs-root
 
