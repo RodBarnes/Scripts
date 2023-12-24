@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#v1.0
 
 # System-wide crontab file and cron job directory. Change these for your system.
 # All credit to 'Benjamin W' as found on this StackExhange page:

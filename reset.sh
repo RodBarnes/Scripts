@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#v1.0
 
 # Reset installation of Appimage
 #bash ~/Scripts/install_appimage.sh localsend LocalSend-1.13.1-linux-x86-64

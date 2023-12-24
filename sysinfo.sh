@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#v1.0
 
 # interrogate the system with the listed commands in an attempt to
 # identify all devices, hardware, configurations, etc. that define

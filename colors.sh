@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# v1.0
 
 # Common module specifying names for terminal color codes
 # for reference in other scripts.

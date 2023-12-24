@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#v1.0
 
 # Show how long a process has been running
 
