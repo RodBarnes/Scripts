@@ -17,7 +17,7 @@ tab=$(echo -en "\t")
 function clean_cron_lines() {
     while read line ; do
         echo "${line}" |
-            egrep --invert-match '^($|\s*#|\s*[[:alnum:]_]+=)' |
+            grep -E --invert-match '^($|\s*#|\s*[[:alnum:]_]+=)' |
             sed --regexp-extended "s/\s+/ /g" |
             sed --regexp-extended "s/^ //"
     done;
@@ -28,7 +28,7 @@ function clean_cron_lines() {
 # directory as if it were scheduled explicitly.
 function lookup_run_parts() {
     while read line ; do
-        match=$(echo "${line}" | egrep -o 'run-parts (-{1,2}\S+ )*\S+')
+        match=$(echo "${line}" | grep -Eo 'run-parts (-{1,2}\S+ )*\S+')
 
         if [[ -z "${match}" ]] ; then
             echo "${line}"
