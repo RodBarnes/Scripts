@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#v1.0
+#v1.01
 
 # This has been tested on Fedora 39 Cinnamon and works well.
 # It should work under Ubuntu and downstream with little or no changes.
@@ -25,37 +25,31 @@ if [[ $# < 2 ]]; then
 fi
 
 COMMAND=$1
-APPFILE=$2
+FILENAME=$2
 USER=$(whoami)
-APPIMAGE=$APPFILE
 
-if [ -f /home/$USER/Downloads/$APPFILE ]; then
-    APPIMAGE=$(basename $APPFILE)
-elif [ -f /home/$USER/Downloads/$APPFILE.AppImage ]; then
-    APPIMAGE=$APPFILE
-else
-    printx "Unable to locate specified '$APPFILE' or '$APPFILE.AppImage' in '/home/$USER/Downloads/'"
-    exit
-fi
+# Strip any extension that may've been provided
+APPNAME=$(basename $FILENAME .AppImage)
 
-if [ -f /usr/local/bin/$COMMAND ]; then
-  printx "'$COMMAND' is already present in /usr/local/bin"
+# Confirm the AppImage can be found using the supplied filename
+if [ ! -f /home/$USER/Downloads/$APPNAME.AppImage ]; then
+  printx "Unable to locate specified '$FILENAME' or '$FILENAME.AppImage' in '/home/$USER/Downloads/'"
   exit
 fi
 
 # Create the folder, move the AppImage, make it executable, and create the command
 printx "Installing app..."
 sudo mkdir /opt/$COMMAND
-sudo mv /home/$USER/Downloads/$APPIMAGE.AppImage /opt/$COMMAND
-sudo chmod +x /opt/$COMMAND/$APPIMAGE.AppImage
-sudo chown root /opt/$COMMAND/$APPIMAGE.AppImage
-sudo chgrp root /opt/$COMMAND/$APPIMAGE.AppImage
-sudo ln -s /opt/$COMMAND/$APPIMAGE.AppImage /usr/local/bin/$COMMAND
+sudo mv /home/$USER/Downloads/$APPNAME.AppImage /opt/$COMMAND
+sudo chmod +x /opt/$COMMAND/$APPNAME.AppImage
+sudo chown root /opt/$COMMAND/$APPNAME.AppImage
+sudo chgrp root /opt/$COMMAND/$APPNAME.AppImage
+sudo ln -s /opt/$COMMAND/$APPNAME.AppImage /usr/local/bin/$COMMAND
 
 # Install in menu
 printx "Installing in menu..."
 cd /opt/$COMMAND
-sudo ./$APPIMAGE.AppImage --appimage-extract 1> /dev/null
+sudo ./$APPNAME.AppImage --appimage-extract 1> /dev/null
 sudo chmod +xr -R ./squashfs-root
 sudo cp ./squashfs-root/.DirIcon .
 DESKTOPPATH=$(ls ./squashfs-root/*.desktop)
