@@ -4,12 +4,9 @@
 # This has been tested on Fedora 39 Cinnamon and works well.
 # It should work under Ubuntu and downstream with little or no changes.
 
-DIR=$(dirname $(readlink -f $0))
-#echo "DIR=${DIR}"
-
 STMT=$(basename $0)
 
-source ${DIR}/colors.sh
+source /usr/local/lib/colors
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
