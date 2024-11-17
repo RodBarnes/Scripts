@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#Version 1.0
+
+# Intended to take a MVK ripped from a DVD and convert it to decent-video H.265
+
+source /usr/local/lib/colors
+function printx {
+  printf "${YELLOW}$1${NOCOLOR}\n"
+}
+
+STMT=$(basename $0)
+
+if [[ $# < 2 ]]; then
+  printx "Syntax: $STMT 'input' 'output'\nWhere:  input is the name of the file to be processed and output is the\n        name of the output file.\n"
+  exit
+fi
+
+INPUT=$1
+OUTPUT=$2
+#echo INPUT=${INPUT}
+#echo OUTPUT=${OUTPUT}
+#exit
+
+ENCODING=hevc_nvenc
+CRF=20
+BITRATE=384k
+
+#ffmpeg -i "$INPUT" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT" 2> "$(basename "$OUTPUT").log"
+ffmpeg -i "$INPUT" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
+#pv "$INPUT" | ffmpeg -i pipe:0 -v warning -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
+#ffmpeg -i "$INPUT" -progress -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
