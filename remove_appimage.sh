@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-#v1.0
+#v1.1
 
-# This has been tested on Fedora 39 Cinnamon and works well.
-# It should work under Ubuntu and downstream with little or no changes.
+# This has been tested on LinxuMint and works well.
+# It should work under Fedora and downstream debian-based with little or no changes.
 
 STMT=$(basename $0)
 
@@ -15,6 +15,9 @@ if [[ "$EUID" = 0 ]]; then
   printx "This must be run as the standard user that will use the device.\nIt will prompt for sudo when it is needed.\n"
   exit
 fi
+
+
+# This is a test comment to demonstrate an addition.
 
 if [[ $# < 1 ]]; then
   printx "Syntax: $STMT 'command'\nWhere:  command is the name to be used to invoke the program\n"
