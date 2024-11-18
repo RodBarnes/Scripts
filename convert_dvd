@@ -25,7 +25,6 @@ ENCODING=hevc_nvenc
 CRF=20
 BITRATE=384k
 
-#ffmpeg -i "$INPUT" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT" 2> "$(basename "$OUTPUT").log"
 ffmpeg -i "$INPUT" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
-#pv "$INPUT" | ffmpeg -i pipe:0 -v warning -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
+#ffmpeg -i "$INPUT" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT" 2> "$(basename "$OUTPUT").log"
 #ffmpeg -i "$INPUT" -progress -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
