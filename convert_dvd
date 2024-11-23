@@ -11,20 +11,20 @@ function printx {
 STMT=$(basename $0)
 
 if [[ $# < 2 ]]; then
-  printx "Syntax: $STMT 'input' 'output'\nWhere:  input is the name of the file to be processed and output is the\n        name of the output file.\n"
+  printx "Syntax: $STMT '<filepath>' '<outpath>'\nWhere:  <filepath> is the FQPN for the file to be processed and <outpath>\n        is the name of the path where the output file should be placed.\n"
   exit
 fi
 
-INPUT=$1
-OUTPUT=$2
-#echo INPUT=${INPUT}
-#echo OUTPUT=${OUTPUT}
+FILEPATH=$1
+OUTPATH=$2
+FILENAME=${FILEPATH##*/}
+#echo FILEPATH=${FILEPATH}
+#echo FILENAME=${FILENAME}
+#echo OUTPATH=${OUTPATH}
 #exit
 
 ENCODING=hevc_nvenc
 CRF=20
 BITRATE=384k
 
-ffmpeg -i "$INPUT" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
-#ffmpeg -i "$INPUT" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT" 2> "$(basename "$OUTPUT").log"
-#ffmpeg -i "$INPUT" -progress -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPUT"
+ffmpeg -i "$FILEPATH" -c:v $ENCODING -crf $CRF -preset slow -rc vbr_hq -c:a aac -b:a $BITRATE -c:s copy "$OUTPATH/$FILENAME"
