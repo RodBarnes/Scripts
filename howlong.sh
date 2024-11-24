@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 #v1.0
 
+source /usr/local/lib/colors
+function printx {
+  printf "${YELLOW}$1${NOCOLOR}\n"
+}
+
 # Show how long a process has been running
+STMT=$(basename $0)
 
 if [ -z $1 ]; then
-	echo "Syntax: $0 \<program_name\> \[\<user\>\]"
+	printx "Syntax: $STMT <program_name> [<user>]"
 	exit 1
 fi
 
