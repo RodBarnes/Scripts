@@ -11,11 +11,13 @@
 
 # Confirm there is a network connection
 
+# Usage: nohup launch_gateway {browser} 2\> /dev/null
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 ip route > chk.net
 if [[ -s chk.net ]]; then
-    brave-browser $(ip route | grep -Po '(?<=via )(\d{1,3}.){4}')
+    $1 $(ip route | grep -Po '(?<=via )(\d{1,3}.){4}')
 else
     notify-send -i "$SCRIPT_DIR/warning.png" "Cannot find gateway.  Did you connect to WiFi?"
 fi
