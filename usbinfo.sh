@@ -14,7 +14,7 @@ if [[ $# < 1 ]]; then
   exit
 fi
 
-IFS=' ' read blank1 BUS blank2 DEV blank3 ID BALANCE <<< $(lsusb | grep ${1})
+IFS=' ' read blank1 BUS blank2 DEV blank3 ID BALANCE <<< $(lsusb | grep -i ${1})
 DEV="${DEV//:}"
 
 VERSTR=$(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2> /dev/null | grep bcdUSB)
