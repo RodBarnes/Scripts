@@ -14,13 +14,11 @@ if [[ $# < 1 ]]; then
   exit
 fi
 
-IFS=' ' read blank1 BUS blank2 DEV BALANCE <<< $(lsusb | grep ${1})
+IFS=' ' read blank1 BUS blank2 DEV blank3 ID BALANCE <<< $(lsusb | grep ${1})
 DEV="${DEV//:}"
 
-echo $BALANCE
-
 VERSTR=$(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2> /dev/null | grep bcdUSB)
-#echo VER=${VER}
 
 IFS=' ' read label VER <<< ${VERSTR}
-echo USB version: $VER
+
+echo ${BALANCE}, ID:${ID}, Spec: ${VER}
