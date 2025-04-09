@@ -39,5 +39,5 @@ case "$1" in
     powersave)      setcpumode powersave; exit 0        ;;
     current|get)    getcpumode; exit 0                  ;;
     help)           show_usage                          ;;
-    *)              ee "Try: $0 help"                   ;;
+    *)              echo "Try: $0 help"                 ;;
 esac
