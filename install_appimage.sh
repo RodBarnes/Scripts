@@ -9,13 +9,12 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-STMT=$(basename $0)
-
 if [[ "$EUID" = 0 ]]; then
   printx "This must be run as the standard user that will use the device.\nIt will prompt for sudo when it is needed.\n"
   exit
 fi
 
+STMT=$(basename $0)
 if [[ $# < 2 ]]; then
   printx "Syntax: $STMT 'command' 'appimage'\nWhere:  command is the name to be used to invoke the program\n        appimage is the filename (without extension) of the AppImage\n"
   exit
