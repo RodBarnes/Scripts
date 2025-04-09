@@ -1,29 +1,25 @@
 #!/bin/bash
 
 # Usage
-# nlog <path_to_file>
+# nlog <dir>
 
-# Clear the log from previous sessions
-rm "$1"
-
-# Output function to handle printing to either stdout or a file
-output() {
-    if [ -n "$logfile" ]; then
-        echo -e "$1" >> "$logfile"
-    else
-        echo -e "$1"
-    fi
+source /usr/local/lib/colors
+function printx {
+  printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-# Check if a filename argument is provided
-logfile=""
-if [ -n "$1" ]; then
-    logfile="$1"
-    # Create the directory if it doesn't exist
-    logdir=$(dirname "$logfile")
-    mkdir -p "$logdir"
-    touch $logfile
+STMT=$(basename $0)
+if [[ $# < 1 ]]; then
+  printx "Syntax: $STMT 'directory'\nWhere:  directory is the name of the location where the log should be stored"
+  exit
 fi
+
+# Get the current user and create the filename
+USER=$(whoami)
+LOGFILE="$1/notifications_${USER}.log"
+
+# Clear the log from previous sessions
+rm $LOGFILE 2> /dev/null
 
 # Monitor DBus for notification events
 dbus-monitor "interface='org.freedesktop.Notifications'" | while read -r line; do
@@ -83,14 +79,13 @@ dbus-monitor "interface='org.freedesktop.Notifications'" | while read -r line; d
         body="$(echo -e "${body}" | sed -e 's/^[[:space:]]*//')"
 
         # Prepare the formatted notification summary
-        notification="----------------------------------\n"
-        notification+="App Name: $app_name\n"
-        notification+="Icon: $icon\n"
-        notification+="Title: $title\n"
-        notification+="Body: \n$body\n"
-        notification+="Hints:\n$hints\n"
+        notification="App Name:$app_name, "
+        notification+="Icon:$icon, "
+        notification+="Title:$title, "
+        notification+="Body:$body, "
+        notification+="Hints:$hints"
 
         # Output the notification summary
-        output "$notification"
+        echo "$notification" >> $LOGFILE
     fi
 done
