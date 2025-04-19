@@ -11,10 +11,10 @@ function printx {
 
 STMT=$(basename $0)
 
-if [[ "$EUID" -ne 0 ]]; then
-  printx "Run this command via sudo.\n"
-  exit
-fi
+# if [[ "$EUID" -ne 0 ]]; then
+#   printx "Run this command via sudo.\n"
+#   exit
+# fi
 
 # The following example for creating a menu from bash is from https://stackoverflow.com/questions/61953905/how-to-make-a-command-output-list-into-a-menu-option-list-with-bash
 
@@ -88,7 +88,7 @@ select SEL in "${DEVICES[@]}" "Quit"; do
 
         # Show the block info
         echo ''
-        lsblk -o NAME,SIZE,FSTYPE,FSVER /dev/${MOUNT}
+        lsblk -o NAME,SIZE,FSTYPE,FSVER,MOUNTPOINTS /dev/${MOUNT}
 
       fi
 
