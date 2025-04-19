@@ -11,6 +11,11 @@ function printx {
 
 STMT=$(basename $0)
 
+if [[ "$EUID" -ne 0 ]]; then
+  printx "Run this command via sudo.\n"
+  exit
+fi
+
 # The following example for creating a menu from bash is from https://stackoverflow.com/questions/61953905/how-to-make-a-command-output-list-into-a-menu-option-list-with-bash
 
 unset DEVICES
