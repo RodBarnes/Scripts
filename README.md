@@ -52,9 +52,9 @@ Show the full device path for the device with the specified label.  This is simi
 ## sysinfo.sh
 
 ## usbinfo.sh
-Usage: `usbinfo <name>`
+Usage: `usbinfo`
 
-Display the USB info -- speed, etc. -- for the matching device.
+Select a USB from the menu and display the USB info -- size, spec, etc. -- for that device.
 
 ## vmtoggle.sh
 Usage: 'vmtoggle <name>`
