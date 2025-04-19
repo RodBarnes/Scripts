@@ -79,15 +79,17 @@ select SEL in "${DEVICES[@]}" "Quit"; do
         IFS='/' read f1 f2 MOUNT <<< ${LINK}
         IFS=' ' read f1 SIZE f3 <<< $(echo -n $(lsblk -o SIZE /dev/${MOUNT}))
         echo Size: ${SIZE}
-        # This line can show the partition info
-        # echo 'Format:'
-        # lsblk -o NAME,SIZE,FSTYPE,FSVER /dev/${MOUNT}
 
         # Test the speed
         echo -n 'Speed: '
         RESULT=$(sudo hdparm -t --direct /dev/${MOUNT})
         IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 SPEED UNIT <<< $(echo $RESULT)
         echo ${SPEED} ${UNIT}
+
+        # Show the block info
+        echo ''
+        lsblk -o NAME,SIZE,FSTYPE,FSVER /dev/${MOUNT}
+
       fi
 
       break
