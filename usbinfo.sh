@@ -28,18 +28,18 @@ select SEL in "${DEVICES[@]}" "Quit"; do
       ;;
     *)
       # Identify the BUS and DEV
-      IFS=' ' read blank1 BUS blank2 DEV blank3 ID BALANCE <<< ${SEL}
+      IFS=' ' read f1 BUS f3 DEV f5 ID BALANCE <<< ${SEL}
       DEV="${DEV//:}"
 
       # Read the specific values
-      IFS=' ' read label f SN <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iSerial)
-      IFS=' ' read label f MFG <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iManufacturer)
-      IFS=' ' read label f PROD <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iProduct)
+      IFS=' ' read label f2 SN <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iSerial)
+      IFS=' ' read label f2 MFG <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iManufacturer)
+      IFS=' ' read label f2 PROD <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iProduct)
       IFS=' ' read label PWR <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep MaxPower)
       IFS=' ' read label SPEC <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep bcdUSB)
       IFS=' ' read label HWV <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep bcdDevice)
 
-      # Display the info
+      # Display the device info
       echo Manufacturer: ${MFG}
       echo Product: ${PROD}
       echo Version: ${HWV}
@@ -50,6 +50,22 @@ select SEL in "${DEVICES[@]}" "Quit"; do
       echo ID: $(echo -n ${SEL} | awk '{printf $6}')
       echo USB Spec: ${SPEC}
       echo MaxPower: ${PWR}
+
+      # Display the block info
+      IFS=' ' read permissions size owner group day month year time path arrow LINK <<< $(ls -l /dev/disk/by-id/usb-${MFG}_${PROD// /_}_${SN}-0:0)
+      IFS='/' read root dev MOUNT <<< ${LINK}
+      IFS=' ' read header SIZE part <<< $(echo -n $(lsblk -o SIZE /dev/${MOUNT}))
+      echo Size: ${SIZE}
+      # This line can show the partition info
+      # echo 'Format:'
+      # lsblk -o NAME,SIZE,FSTYPE,FSVER /dev/${MOUNT}
+
+      # Test the speed
+      echo -n 'Speed: '
+      RESULT=$(sudo hdparm -t --direct /dev/${MOUNT})
+      IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 SPEED UNIT <<< $(echo $RESULT)
+      echo ${SPEED} ${UNIT}
+
       break
       ;;
   esac
