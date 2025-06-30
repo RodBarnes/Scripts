@@ -39,6 +39,7 @@ select SEL in "${devices[@]}" "Quit"; do
       # Identify the BUS and DEV
       IFS=' ' read f1 BUS f3 DEV f5 ID BALANCE <<< ${SEL}
       DEV="${DEV//:}"
+
       # Read the specific values
       IFS=' ' read f1 f2 SN <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iSerial)
       IFS=' ' read f1 f2 MFG <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iManufacturer)
