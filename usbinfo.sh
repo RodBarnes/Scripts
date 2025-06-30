@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#v1.1
 
 # Given an identifying string for which to search the output of lsusb,
 # return the full name of the device and the USB version
@@ -11,21 +10,26 @@ function printx {
 
 STMT=$(basename $0)
 
-# if [[ "$EUID" -ne 0 ]]; then
-#   printx "Run this command via sudo.\n"
-#   exit
-# fi
+if [[ "$EUID" -ne 0 ]]
+then
+  echo 'Skipping speed test. To include the speed test, run as sudo.'
+fi
 
 # The following example for creating a menu from bash is from https://stackoverflow.com/questions/61953905/how-to-make-a-command-output-list-into-a-menu-option-list-with-bash
 
-unset DEVICES
+unset devices
 while IFS= read -r LINE; do
-  DEVICES+=("${LINE}")
-# done < <(lsusb | awk '{ s = ""; for (i = 7; i <= NF; i++) s = s $i " "; print s }')
+  IFS=' ' read f1 BUS f3 DEV f5 ID NAME <<< $LINE
+  DEV="${DEV//:}"
+  IFS=' ' read f1 f2 CLASS REST <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep bInterfaceClass)
+  if [ $CLASS == 'Mass' ]
+  then
+    devices+=("${LINE}")
+  fi
 done < <(lsusb)
 
 # Iterate over an array to create select menu
-select SEL in "${DEVICES[@]}" "Quit"; do
+select SEL in "${devices[@]}" "Quit"; do
   case ${SEL} in
     "Quit")
       # If the user selects the Quit option...
@@ -35,7 +39,6 @@ select SEL in "${DEVICES[@]}" "Quit"; do
       # Identify the BUS and DEV
       IFS=' ' read f1 BUS f3 DEV f5 ID BALANCE <<< ${SEL}
       DEV="${DEV//:}"
-
       # Read the specific values
       IFS=' ' read f1 f2 SN <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iSerial)
       IFS=' ' read f1 f2 MFG <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iManufacturer)
@@ -80,16 +83,18 @@ select SEL in "${DEVICES[@]}" "Quit"; do
         IFS=' ' read f1 SIZE f3 <<< $(echo -n $(lsblk -o SIZE /dev/${MOUNT}))
         echo Size: ${SIZE}
 
-        # Test the speed
-        echo -n 'Speed: '
-        RESULT=$(sudo hdparm -t --direct /dev/${MOUNT})
-        IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 SPEED UNIT <<< $(echo $RESULT)
-        echo ${SPEED} ${UNIT}
+        if [[ "$EUID" -eq 0 ]]
+        then
+          # Test the speed
+          echo -n 'Speed: '
+          RESULT=$(sudo hdparm -t --direct /dev/${MOUNT})
+          IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 SPEED UNIT <<< $(echo $RESULT)
+          echo ${SPEED} ${UNIT}
+        fi
 
         # Show the block info
         echo ''
         lsblk -o NAME,SIZE,FSTYPE,FSVER,MOUNTPOINTS /dev/${MOUNT}
-
       fi
 
       break
