@@ -9,14 +9,12 @@ function printx {
 
 STMT=$(basename $0)
 
-# if [[ "$EUID" -ne 0 ]]
-# then
-#   echo 'This must be run as sudo as it relies upon smartctrl to obtain information.'
-#   echo
-# fi
-
-# info=() while IFS= read -r line; do
-# done < <(`sudo smartctl -a /dev/sda`)
+# Check for smartctl
+if [ -z $(command -v smartctl) ]; then
+  printx "This utility requires the 'smartctl' command.  It isn't present either because"
+  printx " it isn't needed (i.e., there are no smart devices) or it has not been installed.\n"
+  exit
+fi
 
 showInfo () {
   printx "/dev/$1"
