@@ -19,7 +19,7 @@ STMT=$(basename $0)
 # done < <(`sudo smartctl -a /dev/sda`)
 
 showInfo () {
-  printf "/dev/$1\n"
+  printx "/dev/$1"
 
   output=$(sudo smartctl -a /dev/$1)
   echo "$output" | grep "Device Model"
