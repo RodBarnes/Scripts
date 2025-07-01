@@ -16,6 +16,8 @@ if [ -z $(command -v smartctl) ]; then
   exit
 fi
 
+
+
 showInfo () {
   printx "/dev/$1"
 
@@ -33,8 +35,20 @@ showInfo () {
   printf "\n"
 }
 
-lsblk -d -n -oNAME,RM | while read -r name rm; do
-  if [ $rm -eq 0 ]; then
-    showInfo $name
+if [[ $# == 1 ]]; then
+  specific=${1#/dev/}
+  if [ $specific == "?" ] || [ $specific == "-h" ]; then
+    printx "USAGE: $STMT [drive]"
+    printx "Where [drive] is an optional drive designator; e.g., /dev/sda, sda, etc."
+    printx "If no drive is specified, then all drives are iterated.\n"
+  else
+    # Assume it is a drive designator
+    showInfo $specific
   fi
-done
+else
+  lsblk -d -n -oNAME,RM | while read -r name rm; do
+    if [ $rm -eq 0 ]; then
+      showInfo $name
+    fi
+  done
+fi
