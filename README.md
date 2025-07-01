@@ -29,12 +29,12 @@ This convenience script uncompresses those files and updates initramfs to correc
 ## install_appimage.sh
 Usage: `install_appimage.sh <name> <path_to_appimage>`
 
-On LinxuMint, installs the AppImage under `/opt` and adds an entry to the menu based upon the information and icon found in the AppImage.
+Installs the AppImage under `/opt` and adds an entry to the menu based upon the information and icon found in the AppImage.
 
 ## launch_gateway.sh
 Usage: `nohup launch_gateway.sh {browser} 2\> /dev/null`
 
-On LinxMint running on a laptop, it will not automatically bring up the gateway for logging in when that is required to connecte to the internet; e.g., with hotel networks.  This will bring up that gateway page.  It is recommended this be added to a short-cut key for easy access.
+This script can be used to bring up the gateway for logging in when that is required to connect to the internet; e.g., with hotel networks.  (With some Linux OS, this does not happen automatically.)  It is recommended this be added to a short-cut key for easy access.
 
 ## nlog.sh
 Usage: `nlog.sh <path_to_log>`
