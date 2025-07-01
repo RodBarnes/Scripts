@@ -19,6 +19,13 @@ Usage: `howlong <program_name> [<user>]`
 
 Displays how long any matching process has been running.
 
+## initramfs_logo_fix.sh
+Usage: `initram_log_fix <kerneL>`
+
+Sometimes, when a new kernel is received, the nvidia-related modules are left compressed and the build of `initramfs` fails to include them.  The visual manifestation of this is that logos and graphics displayed by Plymouth during the boot of the OS are based upon the default graphics.
+
+This convenience script uncompresses those files and updates initramfs
+
 ## install_appimage.sh
 Usage: `install_appimage.sh <name> <path_to_appimage>`
 
