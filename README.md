@@ -1,6 +1,11 @@
 # Scripts
 A collection of `bash` scripts for working with Linux systems.  Each is intended to be instantiated within the `$PATH`, set as executable, and without the `.sh` extension.  The recommended location is `/usr/local/bin`.
 
+## blkdevinfo.sh
+Usage: `blkdevinfo [drive]`
+
+Uses `smartctl` to display information about the non-removable drives found on the system.  If no drive is specified, it iterates all the drives.
+
 ## colors.sh
 A library for inclusion by other scripts that sets up some colors for text.  It must be accessible via `$PATH` for the scripts to find it.  The recommended location is `/usr/local/lib`
 
