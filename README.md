@@ -24,7 +24,7 @@ Usage: `initram_log_fix <kerneL>`
 
 Sometimes, when a new kernel is received, the nvidia-related modules are left compressed and the build of `initramfs` fails to include them.  The visual manifestation of this is that logos and graphics displayed by Plymouth during the boot of the OS are based upon the default resolution and will appear distorted or fuzzy.
 
-This convenience script uncompresses those files and updates initramfs
+This convenience script uncompresses those files and updates initramfs to correct this.
 
 ## install_appimage.sh
 Usage: `install_appimage.sh <name> <path_to_appimage>`
