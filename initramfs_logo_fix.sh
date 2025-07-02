@@ -10,7 +10,6 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
   exit
@@ -18,12 +17,20 @@ fi
 
 STMT=$(basename $0)
 
-if [[ $# < 1 ]]; then
-  printx "Syntax: $STMT <kernel>\nWhere:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic\n"
-  exit
+if [[ $# == 1 ]]; then
+  arg=$1
+  if [ $arg == "?" ] || [ $arg == "-h" ]; then
+    printx "Syntax: $STMT <kernel>\nWhere:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
+    printx "If no kernel is specified it will rebuild the current initramfs.\n"
+    exit
+  else
+    KERNEL=$arg
+    sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
+    sudo sudo update-initramfs -u -k $KERNEL
+  fi
+else
+  KERNEL=$(uname -r)
+  sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
+  sudo sudo update-initramfs -u
 fi
-
-KERNEL=$1
-
-sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
-sudo sudo update-initramfs -u -k $KERNEL
+echo KERNEL=$KERNEL

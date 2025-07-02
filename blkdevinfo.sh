@@ -36,16 +36,18 @@ showInfo () {
 }
 
 if [[ $# == 1 ]]; then
-  specific=${1#/dev/}
-  if [ $specific == "?" ] || [ $specific == "-h" ]; then
+  arg=$1
+  if [ $arg == "?" ] || [ $arg == "-h" ]; then
     printx "USAGE: $STMT [drive]"
     printx "Where [drive] is an optional drive designator; e.g., /dev/sda, sda, etc."
     printx "If no drive is specified, then all drives are iterated.\n"
   else
-    # Assume it is a drive designator
+    # Assume a specific block device was provided
+    specific=${arg#/dev/}
     showInfo $specific
   fi
 else
+  # Iterate for all block devices
   lsblk -d -n -oNAME,RM | while read -r name rm; do
     if [ $rm -eq 0 ]; then
       showInfo $name
