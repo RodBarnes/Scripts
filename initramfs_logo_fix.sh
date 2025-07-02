@@ -10,11 +10,6 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-if [[ "$EUID" != 0 ]]; then
-  printx "This must be run as sudo.\n"
-  exit
-fi
-
 STMT=$(basename $0)
 
 if [[ $# == 1 ]]; then
@@ -25,12 +20,15 @@ if [[ $# == 1 ]]; then
     exit
   else
     KERNEL=$arg
-    sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
-    sudo sudo update-initramfs -u -k $KERNEL
   fi
 else
   KERNEL=$(uname -r)
-  sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
-  sudo sudo update-initramfs -u
 fi
-echo KERNEL=$KERNEL
+
+if [[ "$EUID" != 0 ]]; then
+  printx "This must be run as sudo.\n"
+  exit
+fi
+
+sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
+sudo sudo update-initramfs -u -k $KERNEL
