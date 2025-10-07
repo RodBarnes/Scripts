@@ -2,7 +2,8 @@
 
 # This is a convenience script to address an issue that periodically happens when a
 # new kernel is received.  Sometimes, the nvidia-related module files aren't uncompressed
-# and, thus, do not get included in the initramfs when it is built.
+# and, thus, do not get included in the initramfs when it is built. Lately, the dkms files
+# haven't even been present and a reinstall is required.
 # Obviously, this script is unnecessary on a non-Nvidia system.
 
 source /usr/local/lib/colors
@@ -30,5 +31,13 @@ if [[ "$EUID" != 0 ]]; then
   exit
 fi
 
+# Check for DKMS
+if [ ! -d "/usr/lib/modules/$KERNEL/updates/dkms" ]; then
+  DRIVER=$(nvidia-smi --version | grep 'DRIVER version ' | cut -d ':' -f 2 | cut -d '.' -f 1 | tr -d ' ')
+  sudo apt install --reinstall nvidia-dkms-$DRIVER
+fi
+
+# Uncompress the module and create the initramfs
 sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
-sudo sudo update-initramfs -u -k $KERNEL
+sudo update-initramfs -u -k $KERNEL
+#sudo rm /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.zst
