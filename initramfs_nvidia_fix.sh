@@ -33,7 +33,10 @@ fi
 
 # Check for DKMS
 if [ ! -d "/usr/lib/modules/$KERNEL/updates/dkms" ]; then
-  DRIVER=$(nvidia-smi --version | grep 'DRIVER version ' | cut -d ':' -f 2 | cut -d '.' -f 1 | tr -d ' ')
+  # prompt for what version to install
+  echo "The DKMS files are missing.  Enter the value of the driver series to reinstall; e.g., 550, 580, etc."
+  read DRIVER
+  #DRIVER=$(nvidia-smi --version | grep 'DRIVER version ' | cut -d ':' -f 2 | cut -d '.' -f 1 | tr -d ' ')
   sudo apt install --reinstall nvidia-dkms-$DRIVER
 fi
 
