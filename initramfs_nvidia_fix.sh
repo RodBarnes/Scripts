@@ -34,10 +34,40 @@ fi
 # Check for DKMS
 if [ ! -d "/usr/lib/modules/$KERNEL/updates/dkms" ]; then
   # prompt for what version to install
-  echo "The DKMS files are missing.  Enter the value of the driver series to reinstall; e.g., 550, 580, etc."
-  read DRIVER
+  echo "The DKMS files are missing."
+
+  unset drivers
+  while IFS= read -r LINE; do
+    IFS='/' read NAME f2 <<< $LINE
+    IFS='-' read f1 f2 VERSION f4 f5 <<< $NAME
+    drivers+=("${VERSION}")
+  done < <(sudo apt list --installed nvidia-driver* 2> /dev/null )
+
+  options=($(printf '%s\n' "${drivers[@]}" | sort -u))   
+
+  if [ ${#options[@]} == 1 ]; then
+    selected=${options[0]}
+  else
+    printf "Select the driver to reinstall...\n"
+    # Iterate over an array to create select menu
+    select SEL in "${options[@]}" "Quit"; do
+      case ${SEL} in
+        "Quit")
+          # If the user selects the Quit option...
+          break
+          ;;
+        *)
+          selected=${SEL}
+          break
+          ;;
+      esac
+    done
+  fi
+
+  printf "Reinstalling nvidia-dkms-${selected}\n"
+
   #DRIVER=$(nvidia-smi --version | grep 'DRIVER version ' | cut -d ':' -f 2 | cut -d '.' -f 1 | tr -d ' ')
-  sudo apt install --reinstall nvidia-dkms-$DRIVER
+  sudo apt install --reinstall nvidia-dkms-$selected
 fi
 
 # Uncompress the module and create the initramfs
