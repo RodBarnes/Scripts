@@ -8,18 +8,18 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-STMT=$(basename $0)
+stmt=$(basename $0)
 if [[ $# < 1 ]]; then
-  printx "Syntax: $STMT 'directory'\nWhere:  directory is the name of the location where the log should be stored"
+  printx "Syntax: $stmt 'directory'\nWhere:  directory is the name of the location where the log should be stored"
   exit
 fi
 
 # Get the current user and create the filename
-USER=$(whoami)
-LOGFILE="$1/notifications_${USER}.log"
+user=$(whoami)
+logfile="$1/notifications_${user}.log"
 
 # Clear the log from previous sessions
-rm $LOGFILE 2> /dev/null
+rm $logfile 2> /dev/null
 
 # Monitor DBus for notification events
 dbus-monitor "interface='org.freedesktop.Notifications'" | while read -r line; do
@@ -79,13 +79,14 @@ dbus-monitor "interface='org.freedesktop.Notifications'" | while read -r line; d
         body="$(echo -e "${body}" | sed -e 's/^[[:space:]]*//')"
 
         # Prepare the formatted notification summary
-        notification="App Name:$app_name, "
+        notification="Timestamp:$(date +%Y%m%d_%H%M%S), "
+        notification+="App Name:$app_name, "
         notification+="Icon:$icon, "
         notification+="Title:$title, "
         notification+="Body:$body, "
         notification+="Hints:$hints"
 
         # Output the notification summary
-        echo "$notification" >> $LOGFILE
+        echo "$notification" >> $logfile
     fi
 done
