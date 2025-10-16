@@ -11,19 +11,19 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-STMT=$(basename $0)
+stmt=$(basename $0)
 
 if [[ $# == 1 ]]; then
   arg=$1
   if [ $arg == "?" ] || [ $arg == "-h" ]; then
-    printx "Syntax: $STMT <kernel>\nWhere:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
+    printx "Syntax: $stmt <kernel>\nWhere:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
     printx "If no kernel is specified it will rebuild the current initramfs.\n"
     exit
   else
-    KERNEL=$arg
+    kernel=$arg
   fi
 else
-  KERNEL=$(uname -r)
+  kernel=$(uname -r)
 fi
 
 if [[ "$EUID" != 0 ]]; then
@@ -32,22 +32,27 @@ if [[ "$EUID" != 0 ]]; then
 fi
 
 # Check for DKMS
-if [ ! -d "/usr/lib/modules/$KERNEL/updates/dkms" ]; then
+if [ ! -d "/usr/lib/modules/$kernel/updates/dkms" ]; then
   # prompt for what version to install
   echo "The DKMS files are missing."
 
+  # Get a list of the currently installed drivers
+  # If more than one, display the list and allow the user to select.
+  # NOTE: There should only be one, but...
   unset drivers
-  while IFS= read -r LINE; do
-    IFS='/' read NAME f2 <<< $LINE
-    IFS='-' read f1 f2 VERSION f4 f5 <<< $NAME
-    drivers+=("${VERSION}")
+  while IFS= read -r line; do
+    IFS='/' read name f2 <<< $line
+    IFS='-' read f1 f2 version f4 f5 <<< $name
+    drivers+=("${version}")
   done < <(sudo apt list --installed nvidia-driver* 2> /dev/null )
 
-  options=($(printf '%s\n' "${drivers[@]}" | sort -u))   
-
   if [ ${#options[@]} == 1 ]; then
+    # There is just one so select that one.
     selected=${options[0]}
   else
+    # Remove any duplicates in the list
+    options=($(printf '%s\n' "${drivers[@]}" | sort -u))   
+
     printf "Select the driver to reinstall...\n"
     # Iterate over an array to create select menu
     select SEL in "${options[@]}" "Quit"; do
@@ -64,13 +69,12 @@ if [ ! -d "/usr/lib/modules/$KERNEL/updates/dkms" ]; then
     done
   fi
 
+  # Inform the user of what is happening and reinstall the DKMS files
   printf "Reinstalling nvidia-dkms-${selected}\n"
-
-  #DRIVER=$(nvidia-smi --version | grep 'DRIVER version ' | cut -d ':' -f 2 | cut -d '.' -f 1 | tr -d ' ')
   sudo apt install --reinstall nvidia-dkms-$selected
 fi
 
 # Uncompress the module and create the initramfs
-sudo unzstd /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.ko.zst
-sudo update-initramfs -u -k $KERNEL
-#sudo rm /usr/lib/modules/$KERNEL/updates/dkms/nvidia*.zst
+sudo unzstd /usr/lib/modules/$kernel/updates/dkms/nvidia*.ko.zst
+sudo update-initramfs -u -k $kernel
+#sudo rm /usr/lib/modules/$kernel/updates/dkms/nvidia*.zst

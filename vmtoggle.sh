@@ -8,20 +8,20 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-STMT=$(basename $0)
+stmt=$(basename $0)
 
 if [[ $# < 1 ]]; then
-  printx "Syntax: $STMT 'vm_name'\nWhere:  vm_name is the name of the VM to be started or shutdown\n"
+  printx "Syntax: $stmt 'vm_name'\nWhere:  vm_name is the name of the VM to be started or shutdown\n"
   exit
 fi
 
-VM=$1
+vmname=$1
 
 # FInd out if it is running
-if vboxmanage list runningvms | grep -q $VM; then
+if vboxmanage list runningvms | grep -q $vmname; then
     # Shutdown
-    vboxmanage controlvm $VM shutdown
+    vboxmanage controlvm $vmname shutdown
 else
     # Start
-    vboxmanage startvm $VM
+    vboxmanage startvm $vmname
 fi

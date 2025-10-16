@@ -8,7 +8,7 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-STMT=$(basename $0)
+stmt=$(basename $0)
 
 if [[ "$EUID" -ne 0 ]]
 then
@@ -18,84 +18,84 @@ fi
 # The following example for creating a menu from bash is from https://stackoverflow.com/questions/61953905/how-to-make-a-command-output-list-into-a-menu-option-list-with-bash
 
 unset devices
-while IFS= read -r LINE; do
-  IFS=' ' read f1 BUS f3 DEV f5 ID NAME <<< $LINE
-  DEV="${DEV//:}"
-  IFS=' ' read f1 f2 CLASS REST <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep bInterfaceClass)
-  if [ $CLASS == 'Mass' ]
+while IFS= read -r line; do
+  IFS=' ' read f1 bus f3 dev f5 ID name <<< $line
+  dev="${dev//:}"
+  IFS=' ' read f1 f2 class rest <<< $(lsusb -D /dev/bus/usb/${bus}/${dev} 2>/dev/null | grep bInterfaceClass)
+  if [ $class == 'Mass' ]
   then
-    devices+=("${LINE}")
+    devices+=("${line}")
   fi
 done < <(lsusb)
 
 # Iterate over an array to create select menu
-select SEL in "${devices[@]}" "Quit"; do
-  case ${SEL} in
+select selection in "${devices[@]}" "Quit"; do
+  case ${selection} in
     "Quit")
       # If the user selects the Quit option...
       break
       ;;
     *)
-      # Identify the BUS and DEV
-      IFS=' ' read f1 BUS f3 DEV f5 ID BALANCE <<< ${SEL}
-      DEV="${DEV//:}"
+      # Identify the bus and dev
+      IFS=' ' read f1 bus f3 dev f5 ID BALANCE <<< ${selection}
+      dev="${dev//:}"
 
       # Read the specific values
-      IFS=' ' read f1 f2 SN <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iSerial)
-      IFS=' ' read f1 f2 MFG <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iManufacturer)
-      IFS=' ' read f1 f2 PROD <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep iProduct)
-      IFS=' ' read f1 PWR <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep MaxPower)
-      IFS=' ' read f1 SPEC <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep bcdUSB)
-      IFS=' ' read f1 HWV <<< $(lsusb -D /dev/bus/usb/${BUS}/${DEV} 2>/dev/null | grep bcdDevice)
+      IFS=' ' read f1 f2 SN <<< $(lsusb -D /dev/bus/usb/${bus}/${dev} 2>/dev/null | grep iSerial)
+      IFS=' ' read f1 f2 mfg <<< $(lsusb -D /dev/bus/usb/${bus}/${dev} 2>/dev/null | grep iManufacturer)
+      IFS=' ' read f1 f2 prod <<< $(lsusb -D /dev/bus/usb/${bus}/${dev} 2>/dev/null | grep iProduct)
+      IFS=' ' read f1 pwr <<< $(lsusb -D /dev/bus/usb/${bus}/${dev} 2>/dev/null | grep MaxPower)
+      IFS=' ' read f1 spec <<< $(lsusb -D /dev/bus/usb/${bus}/${dev} 2>/dev/null | grep bcdUSB)
+      IFS=' ' read f1 hwv <<< $(lsusb -D /dev/bus/usb/${bus}/${dev} 2>/dev/null | grep bcdDevice)
 
       # Display the device info
-      echo Manufacturer: ${MFG}
-      echo Product: ${PROD}
-      echo Version: ${HWV}
-      echo Serial: ${SN}
+      echo Manufacturer: ${mfg}
+      echo Product: ${prod}
+      echo Version: ${hwv}
+      echo Serial: ${sn}
       echo -n 'Label: "'
-      echo -n ${SEL} | awk '{ s = ""; for (i = 7; i < NF; i++) s = s $i " "; printf s } {printf $NF}'
+      echo -n ${selection} | awk '{ s = ""; for (i = 7; i < NF; i++) s = s $i " "; printf s } {printf $NF}'
       echo '"'
-      echo ID: $(echo -n ${SEL} | awk '{printf $6}')
-      echo USB Spec: ${SPEC}
-      echo MaxPower: ${PWR}
+      echo ID: $(echo -n ${selection} | awk '{printf $6}')
+      echo USB Spec: ${spec}
+      echo MaxPower: ${pwr}
 
       # Display the block info
-      IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 LINK <<< $(ls -l /dev/disk/by-id/usb-*${PROD// /_}_${SN}-0:0 2> /dev/null)
-      if [ -z "$LINK" ]
+      IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 link <<< $(ls -l /dev/disk/by-id/usb-*${prod// /_}_${sn}-0:0 2> /dev/null)
+      if [ -z "$link" ]
       then
         # Some off brands don't put in the expected info for creating the link
         # So try just using the serial number which should normally be sufficient
-        IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 LINK <<< $(ls -l /dev/disk/by-id/usb-*_${SN}-0:0 2> /dev/null)
-        if [ -z "$LINK" ]
+        IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 link <<< $(ls -l /dev/disk/by-id/usb-*_${SN}-0:0 2> /dev/null)
+        if [ -z "$link" ]
         then
           # Apparently this one is really not even close.  Just try to see what can be found
-          IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 LINK <<< $(ls -l /dev/disk/by-id/usb-*-0:0 2> /dev/null)
+          IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 link <<< $(ls -l /dev/disk/by-id/usb-*-0:0 2> /dev/null)
         fi
       fi
 
-      if [ -z "$LINK" ]
+      if [ -z "$link" ]
       then
         # Unable to get a reference to the link so don't try any of the rest
         echo 'Unable to get a reference to the /dev/ device.'
         exit
       else
-        IFS='/' read f1 f2 MOUNT <<< ${LINK}
-        IFS=' ' read f1 SIZE f3 <<< $(echo -n $(lsblk -o SIZE /dev/${MOUNT}))
+        IFS='/' read f1 f2 mount <<< ${link}
+        IFS=' ' read f1 SIZE f3 <<< $(echo -n $(lsblk -o SIZE /dev/${mount}))
         echo Size: ${SIZE}
 
         if [[ "$EUID" -eq 0 ]]
         then
           # Test the speed
           echo -n 'Speed: '
-          RESULT=$(sudo hdparm -t --direct /dev/${MOUNT})
-          IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 SPEED UNIT <<< $(echo $RESULT)
-          echo ${SPEED} ${UNIT}
+          result=$(sudo hdparm -t --direct /dev/${mount})
+          IFS=' ' read f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 speed unit <<< $(echo $result)
+          echo ${speed} ${unit}
         fi
 
         # Show the block info
         echo ''
-        lsblk -o NAME,SIZE,FSTYPE,FSVER,MOUNTPOINTS /dev/${MOUNT}
+        lsblk -o NAME,SIZE,FSTYPE,FSVER,MOUNTPOINTS /dev/${mount}
       fi
 
       break

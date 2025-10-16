@@ -4,7 +4,7 @@
 # This has been tested on LinxuMint and works well.
 # It should work under Fedora and downstream debian-based with little or no changes.
 
-STMT=$(basename $0)
+stmt=$(basename $0)
 
 source /usr/local/lib/colors
 function printx {
@@ -20,18 +20,18 @@ fi
 # This is a test comment to demonstrate an addition.
 
 if [[ $# < 1 ]]; then
-  printx "Syntax: $STMT 'command'\nWhere:  command is the name to be used to invoke the program\n"
+  printx "Syntax: $stmt 'command'\nWhere:  command is the name to be used to invoke the program\n"
   exit
 fi
 
-COMMAND=$1
+command=$1
 
 # Get the name of the AppImage package
-cd /opt/$COMMAND
-APPIMAGE=$(ls *.AppImage)
+cd /opt/$command
+appimage=$(ls *.AppImage)
 
 # Confirm
-printx "This entirely removes the command '$COMMAND' and '$APPIMAGE' from the system."
+printx "This entirely removes the command '$command' and '$appimage' from the system."
 while true; do
 read -p "Do you want to proceed? (yes/no) " yn
 case $yn in 
@@ -44,13 +44,13 @@ case $yn in
 esac
 done
 
-sudo ./$APPIMAGE --appimage-extract 1> /dev/null
+sudo ./$appimage --appimage-extract 1> /dev/null
 cd squashfs-root
-DESKTOPFILE=$(ls *.desktop)
+desktopfile=$(ls *.desktop)
 cd /opt
-sudo rm /usr/local/share/applications/$DESKTOPFILE
-sudo rm /usr/local/bin/$COMMAND
-sudo rm -rf /opt/$COMMAND
+sudo rm /usr/local/share/applications/$desktopfile
+sudo rm /usr/local/bin/$command
+sudo rm -rf /opt/$command
 sudo update-desktop-database
 
 printx "Removal complete"

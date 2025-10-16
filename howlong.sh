@@ -7,10 +7,10 @@ function printx {
 }
 
 # Show how long a process has been running
-STMT=$(basename $0)
+stmt=$(basename $0)
 
 if [ -z $1 ]; then
-	printx "Syntax: $STMT <program_name> [<user>]"
+	printx "Syntax: $stmt <program_name> [<user>]"
 	exit 1
 fi
 
@@ -19,26 +19,26 @@ fi
 # 2nd argument is the user -- defaults to current user
 # See if used bash to execute
 if [ $1 == "bash" ]; then
-	PROGNAME=$2
-	CUSER=$3
+	progname=$2
+	cuser=$3
 else
-	PROGNAME=$1
-	CUSER=$2
+	progname=$1
+	cuser=$2
 fi
 
-if [ -z $CUSER ]; then
-	CUSER=$USER
+if [ -z $cuser ]; then
+	cuser=$USER
 fi
 
-SRCHNAME="[${PROGNAME:0:1}]${PROGNAME:1:100}"
+srchname="[${progname:0:1}]${progname:1:100}"
 
 # Get the process entry
-PS_ENTRY=$(ps -u $CUSER -o etime,cmd | grep "${SRCHNAME}")
-ETIME=$(echo $PS_ENTRY | cut -d' ' -f 1)
-if [ $ETIME == "00:00" ]; then
-	echo "Process '$PROGNAME' not found"
+PS_ENTRY=$(ps -u $cuser -o etime,cmd | grep "${srchname}")
+etime=$(echo $PS_ENTRY | cut -d' ' -f 1)
+if [ $etime == "00:00" ]; then
+	echo "Process '$progname' not found"
 	exit 1
 fi
 
-echo $ETIME $PROGNAME
+echo $etime $progname
 

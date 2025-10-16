@@ -7,7 +7,7 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-STMT=$(basename $0)
+stmt=$(basename $0)
 
 # Check for smartctl
 if [ -z $(command -v smartctl) ]; then
@@ -38,7 +38,7 @@ showInfo () {
 if [[ $# == 1 ]]; then
   arg=$1
   if [ $arg == "?" ] || [ $arg == "-h" ]; then
-    printx "USAGE: $STMT [drive]"
+    printx "USAGE: $stmt [drive]"
     printx "Where [drive] is an optional drive designator; e.g., /dev/sda, sda, etc."
     printx "If no drive is specified, then all drives are iterated.\n"
   else

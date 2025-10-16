@@ -8,39 +8,39 @@ if [ -z $1 ]; then
 	exit 1
 fi
 
-DEVNAME=$1
-DEVID=$(devid $DEVNAME)
+devname=$1
+devid=$(devid $devname)
 
-echo "Testing $DEVID..."
+echo "Testing $devid..."
 
 echo "Pass #1..."
-PASS1=$(sudo hdparm -t --direct /dev/$DEVID)
-TMP=(${PASS1/:})
-SIZE1+=(${TMP[5]})
-TIME1+=(${TMP[8]})
-RATE1+=(${TMP[11]})
+pass1=$(sudo hdparm -t --direct /dev/$devid)
+tmp=(${pass1/:})
+size1+=(${tmp[5]})
+time1+=(${tmp[8]})
+rate1+=(${tmp[11]})
 
 echo "Pass #2..."
-PASS2=$(sudo hdparm -t --direct /dev/$DEVID)
-TMP=(${PASS2/:})
-SIZE2+=(${TMP[5]})
-TIME2+=(${TMP[8]})
-RATE2+=(${TMP[11]})
+pass2=$(sudo hdparm -t --direct /dev/$devid)
+tmp=(${pass2/:})
+size2+=(${tmp[5]})
+time2+=(${tmp[8]})
+rate2+=(${tmp[11]})
 
 echo "Pass #3..."
-PASS3=$(sudo hdparm -t --direct /dev/$DEVID)
-TMP=(${PASS3/:})
-SIZE3+=(${TMP[5]})
-TIME3+=(${TMP[8]})
-RATE3+=(${TMP[11]})
+pass3=$(sudo hdparm -t --direct /dev/$devid)
+tmp=(${pass3/:})
+size3+=(${tmp[5]})
+time3+=(${tmp[8]})
+rate3+=(${tmp[11]})
 
-EXPSIZE="( $SIZE1 + $SIZE2 + $SIZE3 ) / 3.00"
-AVGSIZE=$(printf "%.2f" $(bc -l <<< $EXPSIZE))
+expsize="( $size1 + $size2 + $size3 ) / 3.00"
+avgsize=$(printf "%.2f" $(bc -l <<< $expsize))
 
-EXPTIME="( $TIME1 + $TIME2 + $TIME3 ) / 3.00"
-AVGTIME=$(printf "%.2f \n" $(bc -l <<< $EXPTIME))
+exptime="( $time1 + $time2 + $time3 ) / 3.00"
+avgtime=$(printf "%.2f \n" $(bc -l <<< $exptime))
 
-EXPRATE="( $RATE1 + $RATE2 + $RATE3 ) / 3.00"
-AVGRATE=$(printf "%.2f \n" $(bc -l <<< $EXPRATE))
+exprate="( $rate1 + $rate2 + $rate3 ) / 3.00"
+avgrate=$(printf "%.2f \n" $(bc -l <<< $exprate))
 
-echo "Size: $AVGSIZE Time: $AVGTIME Rate: $AVGRATE"
+echo "Size: $avgsize Time: $avgtime Rate: $avgrate"

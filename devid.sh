@@ -8,9 +8,9 @@ if [ -z $1 ]; then
 	exit 1
 fi
 
-DEVNAME=$1
+devname=$1
 
-DEVPATH=$(lsblk -l | grep $DEVNAME)
-TMP=(${DEVPATH/ })
-DEVID=${TMP[0]} 
-echo $DEVID
+devpath=$(lsblk -l | grep $devname)
+tmp=(${devpath/ })
+devid=${tmp[0]} 
+echo $devid

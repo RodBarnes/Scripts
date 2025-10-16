@@ -14,44 +14,44 @@ if [[ "$EUID" = 0 ]]; then
   exit
 fi
 
-STMT=$(basename $0)
+stmt=$(basename $0)
 if [[ $# < 2 ]]; then
-  printx "Syntax: $STMT 'command' 'appimage'\nWhere:  command is the name to be used to invoke the program\n        appimage is the filename (without extension) of the AppImage\n"
+  printx "Syntax: $stmt 'command' 'appimage'\nWhere:  command is the name to be used to invoke the program\n        appimage is the filename (without extension) of the AppImage\n"
   exit
 fi
 
-COMMAND=$1
-FILENAME=$2
-USER=$(whoami)
+command=$1
+filename=$2
+user=$(whoami)
 
 # Strip any extension that may've been provided
-APPNAME=$(basename $FILENAME .AppImage)
+appname=$(basename $filename .AppImage)
 
 # Confirm the AppImage can be found using the supplied filename
-if [ ! -f /home/$USER/Downloads/$APPNAME.AppImage ]; then
-  printx "Unable to locate specified '$FILENAME' or '$FILENAME.AppImage' in '/home/$USER/Downloads/'"
+if [ ! -f /home/$user/Downloads/$appname.AppImage ]; then
+  printx "Unable to locate specified '$filename' or '$filename.AppImage' in '/home/$user/Downloads/'"
   exit
 fi
 
 # Create the folder, move the AppImage, make it executable, and create the command
 printx "Installing app..."
-sudo mkdir /opt/$COMMAND
-sudo mv /home/$USER/Downloads/$APPNAME.AppImage /opt/$COMMAND
-sudo chmod +x /opt/$COMMAND/$APPNAME.AppImage
-sudo chown root /opt/$COMMAND/$APPNAME.AppImage
-sudo chgrp root /opt/$COMMAND/$APPNAME.AppImage
-sudo ln -s /opt/$COMMAND/$APPNAME.AppImage /usr/local/bin/$COMMAND
+sudo mkdir /opt/$command
+sudo mv /home/$user/Downloads/$appname.AppImage /opt/$command
+sudo chmod +x /opt/$command/$appname.AppImage
+sudo chown root /opt/$command/$appname.AppImage
+sudo chgrp root /opt/$command/$appname.AppImage
+sudo ln -s /opt/$command/$appname.AppImage /usr/local/bin/$command
 
 # Install in menu
 printx "Installing in menu..."
-cd /opt/$COMMAND
-sudo ./$APPNAME.AppImage --appimage-extract 1> /dev/null
+cd /opt/$command
+sudo ./$appname.AppImage --appimage-extract 1> /dev/null
 sudo chmod +xr -R ./squashfs-root
 sudo cp ./squashfs-root/.DirIcon .
-DESKTOPPATH=$(ls ./squashfs-root/*.desktop)
-sudo sed -i "s|Exec=.*|Exec=$COMMAND|g" $DESKTOPPATH
-sudo sed -i "s|Icon=.*|Icon=/opt/$COMMAND/.DirIcon|g" $DESKTOPPATH
-sudo desktop-file-install --dir=/usr/local/share/applications $DESKTOPPATH
+desktoppath=$(ls ./squashfs-root/*.desktop)
+sudo sed -i "s|Exec=.*|Exec=$command|g" $desktoppath
+sudo sed -i "s|Icon=.*|Icon=/opt/$command/.DirIcon|g" $desktoppath
+sudo desktop-file-install --dir=/usr/local/share/applications $desktoppath
 sudo update-desktop-database
 sudo rm -rf ./squashfs-root
 

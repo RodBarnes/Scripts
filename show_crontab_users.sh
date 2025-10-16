@@ -5,8 +5,8 @@
 # All credit to 'Benjamin W' as found on this StackExhange page:
 # https://stackoverflow.com/questions/134906/how-do-i-list-all-cron-jobs-for-all-users
 
-CRONTAB='/etc/crontab'
-CRONDIR='/etc/cron.d'
+crontabfile='/etc/crontab'
+crontabdir='/etc/cron.d'
 
 # Single tab character. Annoyingly necessary.
 tab=$(echo -en "\t")
@@ -49,10 +49,10 @@ function lookup_run_parts() {
 temp=$(mktemp) || exit 1
 
 # Add all of the jobs from the system-wide crontab file.
-cat "${CRONTAB}" | clean_cron_lines | lookup_run_parts >"${temp}" 
+cat "${crontabfile}" | clean_cron_lines | lookup_run_parts >"${temp}" 
 
 # Add all of the jobs from the system-wide cron directory.
-cat "${CRONDIR}"/* | clean_cron_lines >>"${temp}"  # */ <not a comment>
+cat "${crontabdir}"/* | clean_cron_lines >>"${temp}"  # */ <not a comment>
 
 # Add each user's crontab (if it exists). Insert the user's name between the
 # five time fields and the command.
