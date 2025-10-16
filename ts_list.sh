@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # List the backups on the specified drive.
-# Required parameter: <drive> -- the drive to be mounted which contains the backups
+# Required parameter: <device> -- the device to be mounted which contains the backups
 
 source /usr/local/lib/colors
 function printx {
@@ -12,7 +12,7 @@ backuppath=/mnt/backup/timeshift/snapshots
 stmt=$(basename $0)
 
 function show_syntax () {
-  printx "Syntax: $stmt <drive>\nWhere:  <drive> is the device containing the backups; e.g., /dev/sdb6"
+  printx "Syntax: $stmt <device>\nWhere:  <device> is the device containing the backups; e.g., /dev/sdb6"
   exit  
 }
 
