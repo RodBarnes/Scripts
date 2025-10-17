@@ -63,6 +63,21 @@ Show the full device path for the device with the specified label.  This is simi
 
 ## sysinfo.sh
 
+## ts_backup.sh
+Usage: `sudo ts_backup <device> [-d] [description]`
+
+This creates a full or incrental snapshot in the same fashion as TimeShift with the exception of managing information about the snapshots.  This is designed for use on headless systems so there isn't the need to install TimeShift (with all its GUI libraries) in order to simply use the command line.
+
+## ts_list.sh
+Usage: `sudo ts_list <device>`
+
+This lists the snapshots (as created by `ts_backup` found on the designated device.
+
+## ts_restore.sh
+Usage: `sudo ts_restore <snapshot_device> <restore_device> [-d] [snapshot_name]`
+
+This restores a snapshot created by `ts_backup`.  NOTE: This must be run from a recovery partition or live image so the restore is done to a partition that is not in operation.
+
 ## usbinfo.sh
 Usage: `usbinfo`
 

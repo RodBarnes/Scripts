@@ -15,9 +15,8 @@ function show_syntax () {
 
 stmt=$(basename $0)
 
-if [[ "$EUID" != 0 ]]; then
-  printx "This must be run as sudo.\n"
-  exit
+if [ $# == 0 ]; then
+  show_syntax
 fi
 
 if [[ $# == 1 ]]; then
@@ -32,33 +31,40 @@ else
   show_syntax
 fi
 
+if [[ "$EUID" != 0 ]]; then
+  printx "This must be run as sudo.\n"
+  exit
+fi
+
 if [ ! -e $device ]; then
   printx "There is no such device: $device."
   exit
 fi
 
 mountpath=/mnt/backup
-backuppath=$mountpath/timeshift/snapshots
+snapshotpath=$mountpath/timeshift/snapshots
 descfile=timeshift.desc
-
-printx "Listing backup files on $device"
 
 sudo mount -t ext4 $device $mountpath
 
-# Get the backups
+# Get the snapshots
 unset snapshots
 while IFS= read -r LINE; do
   snapshots+=("${LINE}")
-done < <( find $backuppath -mindepth 1 -maxdepth 1 -type d | cut -d '/' -f6 )
+done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | cut -d '/' -f6 )
 
-# Display the backups and descriptions
-for snapshot in "${snapshots[@]}"; do
-  printf "$snapshot: "
-  if [ -f "$backuppath/$snapshot/$descfile" ]; then
-    printf "$(cat $backuppath/$snapshot/$descfile)\n"
-  else
-    printf "<no desc>\n"
-  fi
-done
+if [ ${#snapshots[@]} -eq 0 ]; then
+  printx "There are no backups on $device"
+else
+  printx "Listing backup files on $device"
+  for snapshot in "${snapshots[@]}"; do
+    printf "$snapshot: "
+    if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
+      printf "$(cat $snapshotpath/$snapshot/$descfile)\n"
+    else
+      printf "<no desc>\n"
+    fi
+  done
+fi
 
 sudo umount $device
