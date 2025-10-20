@@ -58,8 +58,8 @@ if [[ "$EUID" != 0 ]]; then
 fi
 
 mountpath=/mnt/backup
-snapshotpath=$mountpath/timeshift/snapshots
-descfile=timeshift.desc
+snapshotpath=$mountpath/snapshots
+descfile=snapshot.desc
 
 # !!!!!!!!!!!!!!!!
 # Before proceeding, the /root filesystem must be mounted -- which can only be done if running from a live image or
@@ -90,12 +90,12 @@ fi
 unset snapshots
 while IFS= read -r LINE; do
   snapshots+=("${LINE}")
-done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f6 )
+done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5 )
 
 if [ ${#snapshots[@]} -eq 0 ]; then
   printx "There are no backups on $snapshotdevice"
 else
-  printx "Listing backup files on $snapshotdevice"
+  printx "Listing snapshots files on $snapshotdevice"
   for snapshot in "${snapshots[@]}"; do
     if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
       printf "$snapshot: $(cat $snapshotpath/$snapshot/$descfile)\n"
