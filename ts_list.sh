@@ -9,10 +9,8 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <-d <device> | -l <label> | -u <uuid>"
-  printx "Where:  [-d <device>] mount the backup device via its device designator; e.g., /dev/sdb6"
-  printx "        [-l <label>] mount the backup device via its filesystem label"
-  printx "        [-u <uuid>] mount the backup devices via the its UUID"
+  printx "Syntax: $stmt <device>"
+  printx "Where:  <device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   exit  
 }
 
@@ -23,27 +21,26 @@ if [ $# == 0 ]; then
   show_syntax
 fi
 
-# Analyze the arguments
-for i in "${!args[@]}"; do
-  if [ "-d" == "${args[$i]}" ]; then
-    ((i++))
+# Analyze the arguments6
+regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
+i=0
+check=$#
+while [ $i -lt $check ]; do
+  if [[ "${args[$i]}" =~ "/dev/" ]]; then
     device="${args[$i]}"
-  elif [ "-l" == "${args[$i]}" ]; then
-    ((i++))
-    label="${args[$i]}"
-  elif [ "-u" == "${args[$i]}" ]; then
-    ((i++))
+  elif [[ "${args[$i]}" =~ $regex ]]; then
     uuid="${args[$i]}"
-  elif [ "-t" == "${args[$i]}" ]; then
-    dryrun=--dry-run
+  else
+    # Assume it is a label
+    label="${args[$i]}"
   fi
+  ((i++))
 done
+
 
 # echo "Device:$device"
 # echo "Label:$label"
 # echo "UUID:$uuid"
-# echo "Dry-run:$dryrun"
-# echo "Snapshot:$snapshotname"
 
 # Confirm a backup device was identified
 if [ -z $device ] && [ -z $label ] && [ -z $uuid ]; then
@@ -52,13 +49,13 @@ fi
 
 if [ ! -e $device ]; then
   printx "There is no such device: $device."
-  exit
+  exit 2
 fi
 
-# if [[ "$EUID" != 0 ]]; then
-#   printx "This must be run as sudo.\n"
-#   exit
-# fi
+if [[ "$EUID" != 0 ]]; then
+  printx "This must be run as sudo.\n"
+  exit 1
+fi
 
 mountpath=/mnt/backup
 snapshotpath=$mountpath/timeshift/snapshots
@@ -81,11 +78,12 @@ elif [ ! -z $uuid ]; then
 else
   # It should never be able to get here, but...
   printx "No device|label|uuid specified."
+  exit
 fi
 
 if [ $? -ne 0 ]; then
   printx "Unable to mount the backup device."
-  exit 1
+  exit 2
 fi
 
 # Get the snapshots
