@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Restore a backup using rsync command as done by TimeShift.
-# Required parameter: <device> -- The device where backups are stored
-# Optional parameter: -d -- Include to do a dry-run
+# One of the followin is required parameter: <device>, <label>, or <uuid> for mounting the device
+# Optional parameter: -t -- Include to do a dry-run
 
 source /usr/local/lib/colors
 function printx {
@@ -10,9 +10,11 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <device> [-d] [snapshot]"
+  printx "Syntax: $stmt <-d <device> | -l <label> | -u <uuid>  [-t] [-s snapshot]"
   printx "Where:  <device> is the device containing the snapshots; e.g., /dev/sdb6"
-  printx "        [-d] means to do a dry-run"
+  printx "        [-l <label>] mount the backup device via its filesystem label"
+  printx "        [-u <uuid>] mount the backup devices via the its UUID"
+  printx "        [-t] means to do a test without actually creating the backup; i.e., an rsync dry-run"
   printx "        [snapshot] is the name (timestamp) of the snapshot to restore."
   printx "If no snapshot is specified, the device will be queried for the available snapshots."
   exit  
@@ -27,36 +29,43 @@ fi
 
 # Analyze the arguments
 for i in "${!args[@]}"; do
-  if [[ $i == 0 ]]; then
-    if [ "${args[$i]}" == "?" ] || [ "${args[$i]}" == "-h" ]; then
-      show_syntax
-    else
-      # Assume it is the device designator
-      device="${args[$i]}"
-    fi
-  else
-    if [ "-d" == "${args[$i]}" ]; then
-      dryrun=--dry-run
-    else
-      # Assume it is a snapshot name
-      snapshotname="${args[$i]}"
-    fi
+  if [ "-d" == "${args[$i]}" ]; then
+    ((i++))
+    device="${args[$i]}"
+  elif [ "-l" == "${args[$i]}" ]; then
+    ((i++))
+    label="${args[$i]}"
+  elif [ "-u" == "${args[$i]}" ]; then
+    ((i++))
+    uuid="${args[$i]}"
+  elif [ "-s" == "${args[$i]}" ]; then
+    ((i++))
+    snapshotname="${args[$i]}"
+  elif [ "-t" == "${args[$i]}" ]; then
+    dryrun=--dry-run
   fi
 done
 
 echo "Device:$device"
+echo "Label:$label"
+echo "UUID:$uuid"
 echo "Dry-run:$dryrun"
 echo "Snapshot:$snapshotname"
 
-# if [[ "$EUID" != 0 ]]; then
-#   printx "This must be run as sudo.\n"
-#   exit
-# fi
+# Confirm a backup device was identified
+if [ -z $device ] && [ -z $label ] && [ -z $uuid ]; then
+  show_syntax
+fi
 
 if [ ! -e $device ]; then
   printx "There is no such device: $device."
   exit
 fi
+
+# if [[ "$EUID" != 0 ]]; then
+#   printx "This must be run as sudo.\n"
+#   exit
+# fi
 
 mountpath=/mnt/backup
 snapshotpath=$mountpath/timeshift/snapshots
@@ -67,11 +76,25 @@ descfile=timeshift.desc
 # in some way the /root system is not in use and can be replaced.
 # !!!!!!!!!!!!!!!!
 
-sudo mount -t ext4 $device $mountpath
+if [ ! -z $device ]; then
+  sudo mount $device $mountpath
+elif [ ! -z $label ]; then
+  sudo mount LABEL=$label $mountpath
+elif [ ! -z $uuid ]; then
+  sudo mount UUID=$uuid $mountpath
+else
+  # It should never be able to get here, but...
+  printx "No device|label|uuid specified."
+fi
 
-if [ ! -z snapshotname ]; then
+if [ $? -ne 0 ]; then
+  printx "Unable to mount the backup device."
+  exit 1
+fi
+
+if [ -z snapshotname ]; then
   # Get the snapshots and allow selecting
-  printx "Listing backup files on $device"
+  printx "Listing backup files..."
 
   # Get the snapshots
   unset snapshots
@@ -97,10 +120,14 @@ fi
 
 if [ ! -z $snapshotname ]; then
   # Restore the snapshot
-  echo "sudo rsync -aAX $dryrun --verbose --delete --exclude-from=/etc/timeshift-excludes $snapshotpath/$snapshotname/ /mnt/root/"
+  sudo rsync -aAX $dryrun --verbose --delete --exclude-from=/etc/timeshift-excludes $snapshotpath/$snapshotname/ /mnt/root/
 
-  # Delete the timeshift.desc file from the target
-  echo "sudo rm /$descfile"
+  if [ -z $dryrun ]; then
+    # Delete the timeshift.desc file from the target
+   sudo rm /$descfile
+  fi
+else
+  printx "No snapshot was identified."
 fi
 
-sudo umount $device
+sudo umount $mountpath
