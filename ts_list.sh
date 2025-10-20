@@ -103,9 +103,8 @@ if [ ${#snapshots[@]} -eq 0 ]; then
 else
   printx "Listing backup files on $device"
   for snapshot in "${snapshots[@]}"; do
-    printf "$snapshot: "
+    printf "$snapshot: $(sudo du -sh $snapshotpath/$snapshot | awk '{print $1}') -- "
     if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
-      printf "$(sudo du -sh $snapshotpath/$snapshot | awk '{print $1}') -- "
       printf "$(cat $snapshotpath/$snapshot/$descfile)\n"
     else
       printf "<no desc>\n"
