@@ -37,7 +37,6 @@ while [ $i -lt $check ]; do
   ((i++))
 done
 
-
 # echo "Device:$device"
 # echo "Label:$label"
 # echo "UUID:$uuid"
@@ -60,11 +59,6 @@ fi
 mountpath=/mnt/backup
 snapshotpath=$mountpath/snapshots
 descfile=snapshot.desc
-
-# !!!!!!!!!!!!!!!!
-# Before proceeding, the /root filesystem must be mounted -- which can only be done if running from a live image or
-# in some way the /root system is not in use and can be replaced.
-# !!!!!!!!!!!!!!!!
 
 if [ ! -z $device ]; then
   snapshotdevice=$device
