@@ -9,13 +9,10 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <-d <device> | -l <label> | -u <uuid>  [-t] [-s snapshot]"
-  printx "Where:  <device> is the device containing the snapshots; e.g., /dev/sdb6"
+  printx "Syntax: $stmt <-d <device> | -l <label> | -u <uuid>"
+  printx "Where:  [-d <device>] mount the backup device via its device designator; e.g., /dev/sdb6"
   printx "        [-l <label>] mount the backup device via its filesystem label"
   printx "        [-u <uuid>] mount the backup devices via the its UUID"
-  printx "        [-t] means to do a test without actually creating the backup; i.e., an rsync dry-run"
-  printx "        [snapshot] is the name (timestamp) of the snapshot to restore."
-  printx "If no snapshot is specified, the device will be queried for the available snapshots."
   exit  
 }
 
@@ -37,9 +34,6 @@ for i in "${!args[@]}"; do
   elif [ "-u" == "${args[$i]}" ]; then
     ((i++))
     uuid="${args[$i]}"
-  elif [ "-s" == "${args[$i]}" ]; then
-    ((i++))
-    snapshotname="${args[$i]}"
   elif [ "-t" == "${args[$i]}" ]; then
     dryrun=--dry-run
   fi
@@ -76,10 +70,13 @@ descfile=timeshift.desc
 # !!!!!!!!!!!!!!!!
 
 if [ ! -z $device ]; then
+  snapshotdevice=$device
   sudo mount $device $mountpath
 elif [ ! -z $label ]; then
+  snapshotdevice=$label
   sudo mount LABEL=$label $mountpath
 elif [ ! -z $uuid ]; then
+  snapshotdevice=$uuid
   sudo mount UUID=$uuid $mountpath
 else
   # It should never be able to get here, but...
@@ -98,9 +95,9 @@ while IFS= read -r LINE; do
 done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | cut -d '/' -f6 )
 
 if [ ${#snapshots[@]} -eq 0 ]; then
-  printx "There are no backups on $device"
+  printx "There are no backups on $snapshotdevice"
 else
-  printx "Listing backup files on $device"
+  printx "Listing backup files on $snapshotdevice"
   for snapshot in "${snapshots[@]}"; do
     printf "$snapshot: $(sudo du -sh $snapshotpath/$snapshot | awk '{print $1}') -- "
     if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
