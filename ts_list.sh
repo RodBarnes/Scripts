@@ -92,16 +92,15 @@ fi
 unset snapshots
 while IFS= read -r LINE; do
   snapshots+=("${LINE}")
-done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | cut -d '/' -f6 )
+done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f6 )
 
 if [ ${#snapshots[@]} -eq 0 ]; then
   printx "There are no backups on $snapshotdevice"
 else
   printx "Listing backup files on $snapshotdevice"
   for snapshot in "${snapshots[@]}"; do
-    printf "$snapshot: $(sudo du -sh $snapshotpath/$snapshot | awk '{print $1}') -- "
     if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
-      printf "$(cat $snapshotpath/$snapshot/$descfile)\n"
+      printf "$snapshot: $(cat $snapshotpath/$snapshot/$descfile)\n"
     else
       printf "<no desc>\n"
     fi

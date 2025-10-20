@@ -93,21 +93,22 @@ fi
 if [ -n "$(find $snapshotpath -mindepth 1 -maxdepth 1 -type f -o -type d 2>/dev/null)" ]; then
   echo "Creating incremental snapshot..."
   # Snapshots exist so create incremental snapshot referencing the latest
-  sudo rsync -aAX $dryrun --delete --verbose --link-dest=../latest --exclude-from=/etc/timeshift-excludes / $snapshotpath/$timestamp/
+  sudo rsync -aAX $dryrun --delete --verbose --link-dest=../latest --exclude-from=/etc/timeshift-excludes / "$snapshotpath/$timestamp/"
 else
   echo "Creating full snapshot..."
   # This is the first snapshot so create full snapshot
-  sudo rsync -aAX $dryrun --delete --verbose --exclude-from=/etc/timeshift-excludes / $snapshotpath/$timestamp/
+  sudo rsync -aAX $dryrun --delete --verbose --exclude-from=/etc/timeshift-excludes / "$snapshotpath/$timestamp/"
 fi
 
 if [ -z $dryrun ]; then
   # Update "latest"
   ln -sfn $timestamp $snapshotpath/latest
 
-  if [ ! -z $description ]; then
-    # Create timeshift.desc in the snapshot directory
-    echo $description > $snapshotpath/$timestamp/$descfile
+  if [ -z "$description" ]; then
+    description="<no desc>"
   fi
+  # Create timeshift.desc in the snapshot directory
+  echo "$(sudo du -sh $snapshotpath/$snapshot | awk '{print $1}') -- $description" > "$snapshotpath/$timestamp/$descfile"
 else
   echo "Dry run complete"
 fi
