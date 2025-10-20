@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-# Restore a backup using rsync command as done by TimeShift.
-# One of the followin is required parameter: <device>, <label>, or <uuid> for mounting the device
-# Optional parameter: -t -- Include to do a dry-run
+# List the snapshots found on the specified device.
+# One of the following is required parameter: <device>, <label>, or <uuid> for mounting the device
 
 source /usr/local/lib/colors
 function printx {
