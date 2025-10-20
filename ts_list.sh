@@ -46,11 +46,11 @@ for i in "${!args[@]}"; do
   fi
 done
 
-echo "Device:$device"
-echo "Label:$label"
-echo "UUID:$uuid"
-echo "Dry-run:$dryrun"
-echo "Snapshot:$snapshotname"
+# echo "Device:$device"
+# echo "Label:$label"
+# echo "UUID:$uuid"
+# echo "Dry-run:$dryrun"
+# echo "Snapshot:$snapshotname"
 
 # Confirm a backup device was identified
 if [ -z $device ] && [ -z $label ] && [ -z $uuid ]; then
