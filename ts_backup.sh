@@ -1,70 +1,77 @@
 #!/usr/bin/env bash
 
 # Create a snapshot using rsync command as done by TimeShift.
-# One of the followin is required parameter: <device>, <label>, or <uuid> for mounting the device
+# One of the followin is required parameter: <backupdevice>, <label>, or <uuid> for mounting the backupdevice
 # Optional parameter: <desc> -- Description of the snapshot, quote-bounded
 # Optional parameter: -t -- Include to do a dry-run
+
+# NOTE: This script expects to find the listed mountpoints.  If not present, it will fail.
 
 source /usr/local/lib/colors
 
 stmt=$(basename $0)
-mountpath=/mnt/backup
-snapshotpath=$mountpath/snapshots
+backuppath=/mnt/backup
+snapshotpath=$backuppath/snapshots
 timestamp=$(date +%Y-%m-%d-%H%M%S)
 descfile=snapshot.desc
 minspace=5000000
+regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
 
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <device> [-t] [-c comment]"
-  printx "Where:  <device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
+  printx "Syntax: $stmt <backup_device> [-t] [-c comment]"
+  printx "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   printx "        [-t] means to do a test without actually creating the backup; i.e., an rsync dry-run"
   printx "        [-c comment] is a quote-bounded comment for the snapshot"
   exit
 }
 
-function mount_device () {
-  sudo mount $device $mountpath
+function mount_backup_device () {
+  sudo mount $backupdevice $backuppath
   if [ $? -ne 0 ]; then
-    printx "Unable to mount the backup device."
+    printx "Unable to mount the backup backupdevice."
     exit 2
   fi
 }
 
-function unmount_device () {
-  sudo umount $mountpath
+function unmount_backup_device () {
+  sudo umount $backuppath
 }
 
 args=("$@")
 if [ $# == 0 ]; then
   show_syntax
 fi
+# echo "args=${args[@]}"
 
-# Analyze the arguments6
-regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
+# Get the backup_device
 i=0
+if [[ "${args[$i]}" =~ "/dev/" ]]; then
+  backupdevice="${args[$i]}"
+elif [[ "${args[$i]}" =~ $regex ]]; then
+  backupdevice="UUID=${args[$i]}"
+else
+  # Assume it is a label
+  backupdevice="LABEL=${args[$i]}"
+fi
+
+# Get optional parameters
+i=1
 check=$#
 while [ $i -lt $check ]; do
-  if [[ "${args[$i]}" =~ "/dev/" ]]; then
-    device="${args[$i]}"
-  elif [[ "${args[$i]}" =~ $regex ]]; then
-    device="UUID=${args[$i]}"
-  elif [ "${args[$i]}" == "-t" ]; then
+  if [ "${args[$i]}" == "-t" ]; then
     dryrun=--dry-run
   elif [ "${args[$i]}" == "-c" ]; then
     ((i++))
     description="${args[$i]}"
-  else
-    # Assume it is a label
-    device="LABEL=${args[$i]}"
   fi
   ((i++))
 done
 
-# echo "Device:$device"
+# echo "Device:$backupdevice"
 # echo "Dry-run:$dryrun"
 # echo "Desc:$description"
 
@@ -74,17 +81,17 @@ if [[ "$EUID" != 0 ]]; then
   exit 1
 fi
 
-mount_device
+mount_backup_device
 
 # Check how much space is left
 space=$(df /mnt/backup | sed -n '2p;')
 IFS=' ' read dev size used avail pcent mount <<< $space
 if [[ $avail -lt $minspace ]]; then
-  printx "The device '$device' has less only $avail space left of the total $size."
+  printx "The backupdevice '$backupdevice' has less only $avail space left of the total $size."
   read -p "Do you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
     printx "Operation cancelled."
-    unmount_device
+    unmount_backup_device
     exit
   fi
 fi
@@ -113,4 +120,4 @@ else
   echo "Dry run complete"
 fi
 
-unmount_device
+unmount_backup_device

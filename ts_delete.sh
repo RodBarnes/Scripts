@@ -1,66 +1,65 @@
 #!/usr/bin/env bash
 
-# List the snapshots found on the specified device and allow selecting to delete.
-# One of the following is required parameter: <device>, <label>, or <uuid> for mounting the device
+# List the snapshots found on the specified backupdevice and allow selecting to delete.
+# One of the following is required parameter: <backupdevice>, <label>, or <uuid> for mounting the backupdevice
+
+# NOTE: This script expects to find the listed mountpoints.  If not present, it will fail.
 
 source /usr/local/lib/colors
 
 stmt=$(basename $0)
-mountpath=/mnt/backup
-snapshotpath=$mountpath/snapshots
+backuppath=/mnt/backup
+snapshotpath=$backuppath/snapshots
 descfile=snapshot.desc
+regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
 
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <device>"
-  printx "Where:  <device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
+  printx "Syntax: $stmt <backup_device>"
+  printx "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   exit  
 }
 
-function mount_device () {
-  sudo mount $device $mountpath
+function mount_backup_device () {
+  sudo mount $backupdevice $backuppath
   if [ $? -ne 0 ]; then
-    printx "Unable to mount the backup device."
+    printx "Unable to mount the backup backupdevice."
     exit 2
   fi
 }
 
-function unmount_device () {
-  sudo umount $mountpath
+function unmount_backup_device () {
+  sudo umount $backuppath
 }
 
 args=("$@")
 if [ $# == 0 ]; then
   show_syntax
 fi
+# echo "args=${args[@]}"
 
-# Analyze the arguments6
-regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
+# Get the backup_device
 i=0
-check=$#
-while [ $i -lt $check ]; do
-  if [[ "${args[$i]}" =~ "/dev/" ]]; then
-    device="${args[$i]}"
-  elif [[ "${args[$i]}" =~ $regex ]]; then
-    device="UUID=${args[$i]}"
-  else
-    # Assume it is a label
-    device="LABEL=${args[$i]}"
-  fi
-  ((i++))
-done
+if [[ "${args[$i]}" =~ "/dev/" ]]; then
+  backupdevice="${args[$i]}"
+elif [[ "${args[$i]}" =~ $regex ]]; then
+  backupdevice="UUID=${args[$i]}"
+else
+  # Assume it is a label
+  backupdevice="LABEL=${args[$i]}"
+fi
 
-# echo "Device:$device"
+# echo "Device:$backupdevice"
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
   exit 1
 fi
 
-mount_device
+mount_backup_device
 
 # Get the snapshots
 unset snapshots
@@ -68,26 +67,29 @@ while IFS= read -r LINE; do
   snapshots+=("${LINE}")
 done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5 )
 
-  select selection in "${snapshots[@]}" "Cancel"; do
-    case ${selection} in
-      "Cancel")
-        # If the user decides to cancel...
-        break
-        ;;
-      *)
-        snapshotname=$selection
-        break
-        ;;
-    esac
-  done
+select selection in "${snapshots[@]}" "Cancel"; do
+  case ${selection} in
+    "Cancel")
+      # If the user decides to cancel...
+      printx "Operation cancelled."
+      break
+      ;;
+    *)
+      snapshotname=$selection
+      break
+      ;;
+  esac
+done
 
-printx "This will completely DELETE the snapshot '$snapshotname' and is not recoverable."
-read -p "Are you sure you want to proceed? (y/N) " yn
-if [[ $yn != "y" && $yn != "Y" ]]; then
-  printx "Operation cancelled."
-else
-  sudo rm -Rf $snapshotpath/$snapshotname
-  printx "'$snapshotname' has been deleted."
+if [ ! -z $snapshotname ]; then
+  printx "This will completely DELETE the snapshot '$snapshotname' and is not recoverable."
+  read -p "Are you sure you want to proceed? (y/N) " yn
+  if [[ $yn != "y" && $yn != "Y" ]]; then
+    printx "Operation cancelled."
+  else
+    sudo rm -Rf $snapshotpath/$snapshotname
+    printx "'$snapshotname' has been deleted."
+  fi
 fi
 
-unmount_device
+unmount_backup_device
