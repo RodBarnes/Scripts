@@ -2,7 +2,7 @@
 
 # Propagate the specified program to specified systems
 # They will end up in the /home/<user> directory of the target system(s)
-# and will still require ssh into each system to place them
+# and will still require ssh into each system and movebin to place themn
 
 source /usr/local/lib/colors
 
