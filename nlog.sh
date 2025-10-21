@@ -4,13 +4,17 @@
 # nlog <dir>
 
 source /usr/local/lib/colors
+
+stmt=$(basename $0)
+
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-stmt=$(basename $0)
 if [[ $# < 1 ]]; then
-  printx "Syntax: $stmt 'directory'\nWhere:  directory is the name of the location where the log should be stored"
+  printx "Syntax: $stmt 'directory'"
+  printx "Where:  directory is the name of the location where the log should be stored"
+  printx "        This is intended to be used as a startup application."
   exit
 fi
 
