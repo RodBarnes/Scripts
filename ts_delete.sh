@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# List the snapshots found on the specified device.
+# List the snapshots found on the specified device and allow selecting to delete.
 # One of the following is required parameter: <device>, <label>, or <uuid> for mounting the device
 
 source /usr/local/lib/colors
@@ -68,17 +68,26 @@ while IFS= read -r LINE; do
   snapshots+=("${LINE}")
 done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5 )
 
-if [ ${#snapshots[@]} -eq 0 ]; then
-  printx "There are no backups on $device"
-else
-  printx "Listing snapshots files on $device"
-  for snapshot in "${snapshots[@]}"; do
-    if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
-      printf "$snapshot: $(cat $snapshotpath/$snapshot/$descfile)\n"
-    else
-      printf "<no desc>\n"
-    fi
+  select selection in "${snapshots[@]}" "Cancel"; do
+    case ${selection} in
+      "Cancel")
+        # If the user decides to cancel...
+        break
+        ;;
+      *)
+        snapshotname=$selection
+        break
+        ;;
+    esac
   done
+
+printx "This will completely DELETE the snapshot '$snapshotname' and is not recoverable."
+read -p "Are you sure you want to proceed? (y/N) " yn
+if [[ $yn != "y" && $yn != "Y" ]]; then
+  printx "Operation cancelled."
+else
+  sudo rm -Rf $snapshotpath/$snapshotname
+  printx "'$snapshotname' has been deleted."
 fi
 
 unmount_device

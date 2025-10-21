@@ -6,6 +6,14 @@
 # Optional parameter: -t -- Include to do a dry-run
 
 source /usr/local/lib/colors
+
+stmt=$(basename $0)
+mountpath=/mnt/backup
+snapshotpath=$mountpath/snapshots
+timestamp=$(date +%Y-%m-%d-%H%M%S)
+descfile=snapshot.desc
+minspace=5000000
+
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
@@ -18,7 +26,17 @@ function show_syntax () {
   exit
 }
 
-stmt=$(basename $0)
+function mount_device () {
+  sudo mount $device $mountpath
+  if [ $? -ne 0 ]; then
+    printx "Unable to mount the backup device."
+    exit 2
+  fi
+}
+
+function unmount_device () {
+  sudo umount $mountpath
+}
 
 args=("$@")
 if [ $# == 0 ]; then
@@ -33,7 +51,7 @@ while [ $i -lt $check ]; do
   if [[ "${args[$i]}" =~ "/dev/" ]]; then
     device="${args[$i]}"
   elif [[ "${args[$i]}" =~ $regex ]]; then
-    uuid="${args[$i]}"
+    device="UUID=${args[$i]}"
   elif [ "${args[$i]}" == "-t" ]; then
     dryrun=--dry-run
   elif [ "${args[$i]}" == "-c" ]; then
@@ -41,27 +59,14 @@ while [ $i -lt $check ]; do
     description="${args[$i]}"
   else
     # Assume it is a label
-    label="${args[$i]}"
+    device="LABEL=${args[$i]}"
   fi
   ((i++))
 done
 
 # echo "Device:$device"
-# echo "Label:$label"
-# echo "UUID:$uuid"
 # echo "Dry-run:$dryrun"
 # echo "Desc:$description"
-
-# Confirm a backup device was identified
-if [ -z $device ] && [ -z $label ] && [ -z $uuid ]; then
-  show_syntax
-fi
-
-# Confirm the specified device exists
-if [ ! -e $device ]; then
-  printx "There is no such device: $device."
-  exit 2
-fi
 
 # Confirm running as sudo
 if [[ "$EUID" != 0 ]]; then
@@ -69,28 +74,7 @@ if [[ "$EUID" != 0 ]]; then
   exit 1
 fi
 
-mountpath=/mnt/backup
-snapshotpath=$mountpath/snapshots
-timestamp=$(date +%Y-%m-%d-%H%M%S)
-descfile=snapshot.desc
-minspace=5000000
-
-if [ ! -z $device ]; then
-  sudo mount -t ext4 $device $mountpath
-elif [ ! -z $label ]; then
-  sudo mount -t ext4 LABEL=$label $mountpath
-elif [ ! -z $uuid ]; then
-  sudo mount -t ext4 UUID=$uuid $mountpath
-else
-  # It should never be able to get here, but...
-  printx "No device|label|uuid specified."
-  exit
-fi
-
-if [ $? -ne 0 ]; then
-  printx "Unable to mount the backup device."
-  exit 2
-fi
+mount_device
 
 # Check how much space is left
 space=$(df /mnt/backup | sed -n '2p;')
@@ -100,10 +84,12 @@ if [[ $avail -lt $minspace ]]; then
   read -p "Do you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
     printx "Operation cancelled."
+    unmount_device
     exit
   fi
 fi
 
+# Creat the snapshot
 if [ -n "$(find $snapshotpath -mindepth 1 -maxdepth 1 -type f -o -type d 2>/dev/null)" ]; then
   echo "Creating incremental snapshot..."
   # Snapshots exist so create incremental snapshot referencing the latest
@@ -127,4 +113,4 @@ else
   echo "Dry run complete"
 fi
 
-sudo umount $mountpath
+unmount_device
