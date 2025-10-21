@@ -107,7 +107,7 @@ if [ -z $dryrun ]; then
   if [ -z "$description" ]; then
     description="<no desc>"
   fi
-  # Create backup.desc in the snapshot directory
+  # Create description in the snapshot directory
   echo "$(sudo du -sh $snapshotpath/$snapshot | awk '{print $1}') -- $description" > "$snapshotpath/$timestamp/$descfile"
 else
   echo "Dry run complete"
