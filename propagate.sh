@@ -30,8 +30,8 @@ fi
 filepath="${args["0"]}"
 user="${args["1"]}"
 
-echo "filepath=$filepath"
-echo "user=$user"
+# echo "filepath=$filepath"
+# echo "user=$user"
 
 # Get optional parameters
 i=2
