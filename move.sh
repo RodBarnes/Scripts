@@ -11,9 +11,11 @@ function printx {
 }
 
 function show_syntax () {
-	printx "Syntax: $(basename $0) <filepath> <file> [<file>...]"
+	printx "Syntax: $(basename $0) <filepath> <perm> <file> [<file>...]"
 	printx "Where:  <filepath> is the filepath to where the files should be moved."
+  printx "        <perm> are the permissions to be set on the file at the target."
   printx "        <file> is on or more files to be moved."
+  printx "        If no special permissions are necessary, just set it to '+r'".
 	exit
 }
 
@@ -25,13 +27,14 @@ fi
 
 # Get the required arguments
 filepath="${args["0"]}"
+perm="${args["1"]}"
 
-echo "filepath=$filepath"
+# echo "filepath=$filepath"
+# echo "perm=$perm"
 
 # Get optional parameters
-i=1
+i=2
 check=$#
-echo "check=$check"
 files=()
 while [ $i -lt $check ]; do
   files+=("${args[$i]}")
@@ -47,6 +50,6 @@ for file in "${files[@]}"; do
   printf "Moving '$file' to '$filepath'...\n"
   sudo mv "$file" "$filepath"
   sudo chown root:root "$filepath/$file"
-  sudo chmod +x "$filepath/$file"
+  sudo chmod "$perm" "$filepath/$file"
 done
 
