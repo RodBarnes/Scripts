@@ -64,8 +64,14 @@ mount_backup_device
 # Get the snapshots
 unset snapshots
 while IFS= read -r LINE; do
-  snapshots+=("${LINE}")
-done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5 )
+  snapshot=("${LINE}")
+  if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
+    description="$(cat $snapshotpath/$snapshot/$descfile)"
+  else
+    description="<no desc>"
+  fi
+  snapshots+=("$snapshot: $description")
+done < <(find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5)
 
 select selection in "${snapshots[@]}" "Cancel"; do
   case ${selection} in
@@ -75,7 +81,7 @@ select selection in "${snapshots[@]}" "Cancel"; do
       break
       ;;
     *)
-      snapshotname=$selection
+      snapshotname=$(echo $selection | cut -d ':' -f1)
       break
       ;;
   esac

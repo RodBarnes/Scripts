@@ -65,7 +65,13 @@ mount_backup_device
 # Get the snapshots
 unset snapshots
 while IFS= read -r LINE; do
-  snapshots+=("${LINE}")
+  snapshot=("${LINE}")
+  if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
+    description="$(cat $snapshotpath/$snapshot/$descfile)"
+  else
+    description="<no desc>"
+  fi
+  snapshots+=("$snapshot: $description")
 done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5 )
 
 if [ ${#snapshots[@]} -eq 0 ]; then
@@ -73,11 +79,7 @@ if [ ${#snapshots[@]} -eq 0 ]; then
 else
   printx "Listing snapshots files on $backupdevice"
   for snapshot in "${snapshots[@]}"; do
-    if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
-      printf "$snapshot: $(cat $snapshotpath/$snapshot/$descfile)\n"
-    else
-      printf "<no desc>\n"
-    fi
+    printf "$snapshot\n"
   done
 fi
 
