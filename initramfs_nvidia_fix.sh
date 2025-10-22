@@ -53,19 +53,26 @@ if [ ! -d "/usr/lib/modules/$kernel/updates/dkms" ]; then
     # Remove any duplicates in the list
     options=($(printf '%s\n' "${drivers[@]}" | sort -u))   
 
+    count="${#options[@]}"
+    ((options++))
+
     printf "Select the driver to reinstall...\n"
     # Iterate over an array to create select menu
     select SEL in "${options[@]}" "Quit"; do
-      case ${SEL} in
-        "Quit")
-          # If the user selects the Quit option...
-          break
-          ;;
-        *)
-          selected=${SEL}
-          break
-          ;;
-      esac
+      if [[ "$REPLY" =~ ^[0-9]+$ && "$REPLY" -ge 1 && "$REPLY" -le $count ]]; then
+        case ${SEL} in
+          "Quit")
+            # If the user selects the Quit option...
+            break
+            ;;
+          *)
+            selected=${SEL}
+            break
+            ;;
+        esac
+      else
+        printx "Invalid selection. Please enter a number between 1 and $count."
+      fi
     done
   fi
 
