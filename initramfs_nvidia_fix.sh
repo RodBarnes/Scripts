@@ -54,7 +54,7 @@ if [ ! -d "/usr/lib/modules/$kernel/updates/dkms" ]; then
     options=($(printf '%s\n' "${drivers[@]}" | sort -u))   
 
     count="${#options[@]}"
-    ((options++))
+    ((count++))
 
     printf "Select the driver to reinstall...\n"
     # Iterate over an array to create select menu
