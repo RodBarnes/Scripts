@@ -112,6 +112,6 @@ select selection in "${devices[@]}" "Cancel"; do
     esac
     break # Exit the select loop on valid input
   else
-    echo "Invalid selection. Please enter a number between 1 and $count."
+    printx "Invalid selection. Please enter a number between 1 and $count."
   fi
 done
