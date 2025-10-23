@@ -147,7 +147,7 @@ if [ ! -z $snapshotname ]; then
     exit
   else
     # Restore the snapshot
-    echo "sudo rsync -aAX $dryrun --verbose --delete --exclude-from=/etc/timeshift-excludes $snapshotpath/$snapshotname/ /mnt/restore/"
+    echo "sudo rsync -aAX $dryrun --delete $snapshotpath/$snapshotname/ /mnt/restore/"
 
     if [ -z $dryrun ]; then
       # Delete the description file from the target
