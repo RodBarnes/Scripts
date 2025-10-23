@@ -100,11 +100,11 @@ fi
 if [ -n "$(find $snapshotpath -mindepth 1 -maxdepth 1 -type f -o -type d 2>/dev/null)" ]; then
   echo "Creating incremental snapshot..."
   # Snapshots exist so create incremental snapshot referencing the latest
-  sudo rsync -aAX $dryrun --delete --verbose --link-dest=../latest --exclude-from=/etc/backup-excludes / "$snapshotpath/$timestamp/"
+  sudo rsync -aAX $dryrun --delete --link-dest=../latest --exclude-from=/etc/ts_excludes / "$snapshotpath/$timestamp/"
 else
   echo "Creating full snapshot..."
   # This is the first snapshot so create full snapshot
-  sudo rsync -aAX $dryrun --delete --verbose --exclude-from=/etc/backup-excludes / "$snapshotpath/$timestamp/"
+  sudo rsync -aAX $dryrun --delete --exclude-from=/etc/ts_excludes / "$snapshotpath/$timestamp/"
 fi
 
 if [ -z $dryrun ]; then
