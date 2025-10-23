@@ -12,7 +12,7 @@ source /usr/local/lib/colors
 stmt=$(basename $0)
 backuppath=/mnt/backup
 snapshotpath=$backuppath/snapshots
-timestamp=$(date +%Y-%m-%d-%H%M%S)
+snapshotname=$(date +%Y-%m-%d-%H%M%S)
 descfile=snapshot.desc
 minspace=5000000
 regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
@@ -96,28 +96,34 @@ if [[ $avail -lt $minspace ]]; then
   fi
 fi
 
-# Creat the snapshot
+# Create the snapshot
 if [ -n "$(find $snapshotpath -mindepth 1 -maxdepth 1 -type f -o -type d 2>/dev/null)" ]; then
-  echo "Creating incremental snapshot..."
+  printx "Creating incremental snapshot..."
   # Snapshots exist so create incremental snapshot referencing the latest
-  sudo rsync -aAX $dryrun --delete --link-dest=../latest --exclude-from=/etc/ts_excludes / "$snapshotpath/$timestamp/"
+  sudo rsync -aAX $dryrun --delete --link-dest=../latest --exclude-from=/etc/ts_excludes / "$snapshotpath/$snapshotname/"
 else
-  echo "Creating full snapshot..."
+  printx "Creating full snapshot..."
   # This is the first snapshot so create full snapshot
-  sudo rsync -aAX $dryrun --delete --exclude-from=/etc/ts_excludes / "$snapshotpath/$timestamp/"
+  sudo rsync -aAX $dryrun --delete --exclude-from=/etc/ts_excludes / "$snapshotpath/$snapshotname/"
 fi
 
 if [ -z $dryrun ]; then
+  # This was NOT a dry run so...
   # Update "latest"
-  ln -sfn $timestamp $snapshotpath/latest
+  ln -sfn $snapshotname $snapshotpath/latest
 
+  # Use a default description if one was not provided
   if [ -z "$description" ]; then
     description="<no desc>"
   fi
+
   # Create description in the snapshot directory
-  echo "$(sudo du -sh $snapshotpath/$snapshot | awk '{print $1}') -- $description" > "$snapshotpath/$timestamp/$descfile"
+  echo "$(sudo du -sh $snapshotpath/$snapshotname | awk '{print $1}') -- $description" > "$snapshotpath/$snapshotname/$descfile"
+
+  # Done
+  printx "The snapshot '$snapshotname' was successfully completed."
 else
-  echo "Dry run complete"
+  printx "Dry run complete"
 fi
 
 unmount_backup_device

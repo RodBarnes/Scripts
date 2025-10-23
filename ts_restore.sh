@@ -13,6 +13,7 @@ backuppath=/mnt/backup
 restorepath=/mnt/restore
 snapshotpath=$backuppath/snapshots
 descfile=backup.desc
+dryrun_log=ts_restore_dryrun.log
 regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
 
 function printx {
@@ -145,14 +146,24 @@ if [ ! -z $snapshotname ]; then
     unmount_backup_device
     unmount_restore_device
     exit
+  elif [ ! -z $dryrun ]; then
+    # Do a dry run and record the output
+      echo "sudo rsync -aAX --dry-run --delete $snapshotpath/$snapshotname/ /mnt/restore/" > $dryrun_log
+      printx "The dry run restore is completed.  The output is located in '$dryrun_log'."
   else
     # Restore the snapshot
-    echo "sudo rsync -aAX $dryrun --delete $snapshotpath/$snapshotname/ /mnt/restore/"
+    echo "sudo rsync -aAX --delete $snapshotpath/$snapshotname/ /mnt/restore/"
 
-    if [ -z $dryrun ]; then
-      # Delete the description file from the target
-      echo "sudo rm $snapshotpath/$descfile"
-    fi
+    # Delete the description file from the target
+    echo "sudo rm $snapshotpath/$descfile"
+
+    # Restore grub state
+    sudo chroot /mnt/restore
+    update-grub
+    grub-install /dev/sda
+
+    # Done
+    printx "The snapshot '$snapshotpath' was successfully restored."
   fi
 else
   printx "No snapshot was identified."
