@@ -8,7 +8,7 @@
 
 source /usr/local/lib/colors
 
-stmt=$(basename $0)
+command=$(basename $0)
 backuppath=/mnt/backup
 restorepath=/mnt/restore
 snapshotpath=$backuppath/snapshots
@@ -26,10 +26,10 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <backup_device> <restore_device> [-t] [-g <boot_device>] [-s snapshot]"
+  printx "Syntax: $command <backup_device> <restore_device> [-d] [-g <boot_device>] [-s snapshot]"
   printx "Where:  <backup_device> and <restore_device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
-  printx "        [-t] means to do a test without actually creating the backup; i.e., an rsync dry-run"
-  printx "        [-g] means to rebuild grub on the specified device; e.g., /dev/sda1"
+  printx "        [-d] means to do a 'dry-run' test without actually creating the backup."
+  printx "        [-g] means to rebuild grub on the specified device; e.g., /dev/sda1."
   printx "        [snapshot] is the name (timestamp) of the snapshot to restore."
   printx "If no snapshot is specified, the device will be queried for the available snapshots."
   exit  
@@ -101,7 +101,7 @@ fi
 i=2
 check=$#
 while [ $i -le $check ]; do
-  if [ "${args[$i]}" == "-t" ]; then
+  if [ "${args[$i]}" == "-d" ]; then
     dryrun=--dry-run
   elif [ "${args[$i]}" == "-g" ]; then
     ((i++))
@@ -118,11 +118,7 @@ done
 # echo "Dry-run:$dryrun"
 # echo "Boot device:$bootdevice"
 # echo "Snapshot:$snapshotname"
-
-# osid=$(grep "^ID=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
-# partno="${restoredevice: -1}"
-# echo "osid=$osid"
-# echo "partno=$partno"
+# exit
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
