@@ -321,9 +321,9 @@ if [ ! -e $restoredevice ]; then
   exit 2
 fi
 
-#--------------------
-# Begin the operation
-#--------------------
+# --------------------
+# ----- MAINLINE -----
+# --------------------
 
 mount_restore_device
 mount_backup_device
