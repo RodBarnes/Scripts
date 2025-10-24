@@ -31,7 +31,7 @@ function show_syntax () {
 }
 
 function mount_backup_device () {
-  if [ ! -d $backuppath]; then
+  if [ ! -d $backuppath ]; then
     printx "'$backuppath' was not found; creating it..."
     sudo mkdir $backuppath
   fi
@@ -48,7 +48,7 @@ function unmount_backup_device () {
 }
 
 function mount_restore_device () {
-  if [ ! -d $restorepath]; then
+  if [ ! -d $restorepath ]; then
     printx "'$restorepath' was not found; creating it..."
     sudo mkdir $restorepath
   fi
@@ -108,20 +108,25 @@ while [ $i -le $check ]; do
   ((i++))
 done
 
-echo "Backup device:$backupdevice"
-echo "Restore device:$restoredevice"
-echo "Dry-run:$dryrun"
-echo "Fixgrub:$fixgrub"
-echo "Snapshot:$snapshotname"
+# echo "Backup device:$backupdevice"
+# echo "Restore device:$restoredevice"
+# echo "Dry-run:$dryrun"
+# echo "Boot device:$bootdevice"
+# echo "Snapshot:$snapshotname"
+
+# osid=$(grep "^ID=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
+# partno="${restoredevice: -1}"
+# echo "osid=$osid"
+# echo "partno=$partno"
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
-  exit
+  exit 1
 fi
 
 if [ ! -e $restoredevice ]; then
   printx "There is no such device: $restoredevice."
-  exit
+  exit 2
 fi
 
 mount_restore_device
@@ -152,7 +157,7 @@ if [ -z $snapshotname ]; then
 fi
 
 if [ ! -z $snapshotname ]; then
-  printx "This will completely OVERWRITE the operating system on '$snapshotname' and is NOT recoverable."
+  printx "This will completely OVERWRITE the operating system on '$restoredevice' and is NOT reversible."
   read -p "Are you sure you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
     printx "Operation cancelled."
@@ -165,42 +170,60 @@ if [ ! -z $snapshotname ]; then
       printx "The dry run restore is completed.  The output is located in '$dryrun_log'."
   else
     # Restore the snapshot
-    sudo rsync -aAX --delete --exclude-from=/etc/ts_excludes $snapshotpath/$snapshotname/ $restorepath/
+    sudo rsync -aAX --delete --exclude-from=/etc/ts_excludes $snapshotpath/$snapshotname/ $restorepath/ > rsync.out
 
-    # Delete the description file from the target
-    sudo rm $snapshotpath/$descfile
+    if [ $? -ne 0 ]; then
+      printx "Something went wrong with the restore."
+      cat rsync.out
+      rm rsync.out
+      exit 3
+    fi
+
+    if [ -f $snapshotpath/$descfile ]; then
+      # Delete the description file from the target
+      sudo rm $snapshotpath/$descfile
+    fi
 
     # Done
-    printx "The snapshot '$snapshotpath' was successfully restored."
+    printx "The snapshot '$snapshotname' was successfully restored."
 
     if [ ! -z $bootdevice ]; then
-      # Restore grub/boot state
-      printx "Rebuilding grub on $restoredevice"
-
-      # Bind the necessary directories for chroot
+      # Mount the necessary directories
+      sudo mount $bootdevice $restorepath/boot/efi
       sudo mount --bind /dev $restorepath/dev
       sudo mount --bind /proc $restorepath/proc
       sudo mount --bind /sys $restorepath/sys
       sudo mount --bind /dev/pts $restorepath/dev/pts
 
-      printx "Updating and installing grub..."
+      printx "Updating grub on $restoredevice..."
       # Use chroot to rebuild grub on the restored partion
-      sudo chroot $restorepath update-grub
-      sudo chroot $restorepath grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot
+      sudo chroot $restorepath update-grub > update-grub.out 2>1
+      if [ $? -ne 0 ]; then
+        printx "Something went wrong with 'update-grub':"
+        cat update-grub.out
+        rm update-grub.out
+      fi
+      printx "Installing grub on $restoredevice..."
+      sudo chroot $restorepath grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot > grub-install.out 2>1
+      if [ $? -ne 0 ]; then
+        printx "Something went wrong with 'grub-install':"
+        cat grub-install.out
+        rm grub-install.out
+      fi
 
-      printx "Building the UEFI boot entry..."
-      ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
-      PARTNO="${$restoredevice: -1}"
+      printx "Building the UEFI boot entry on $bootdevice with an entry for $restoredevice..."
+      osid=$(grep "^ID=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
+      partno="${restoredevice: -1}"
       # Look for shimx64.efi; if present, use it else use grubx64.efi
-      if [ -f $restorepath/boot/efi/EFI/$ID/shimx64.efi]; then
+      if [ -f $restorepath/boot/efi/EFI/$osid/shimx64.efi ]; then
         bootfile="shimx64"
       else
         bootfile=grubx64
       fi
-      # Set UEFI boot entry -- where PARTNO is the target partition for the boot entry
-      sudo efibootmgr -c -d $bootdevice -p $PARTNO -L "Debian" -l "\EFI\$ID\$bootfile.efi"
+      # Set UEFI boot entry -- where partno is the target partition for the boot entry
+      sudo efibootmgr -c -d $bootdevice -p $partno -L $osid -l "/EFI/$osid/$bootfile.efi" > /dev/null 2>1
       # Establish a fall back in case the above fails to succeed
-      sudo cp $restorepath/boot/efi/EFI/$ID/$bootfile.efi $restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI
+      sudo cp $restorepath/boot/efi/EFI/$osid/$bootfile.efi $restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI
 
       # Unbind the directories
       sudo umount $restorepath/boot/efi $restorepath/dev/pts $restorepath/dev $restorepath/proc $restorepath/sys
