@@ -25,6 +25,11 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
+function readx {
+  printf "${YELLOW}$1${NOCOLOR}"
+  read -p "" $2
+}
+
 function show_syntax () {
   printx "Syntax: $command <backup_device> <restore_device> [-d] [-g <boot_device>] [-s snapshot]"
   printx "Where:  <backup_device> and <restore_device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
@@ -165,7 +170,7 @@ if [ ! -z $snapshotname ]; then
       printx "The dry run restore has completed.  The results are found in '$rsyncout'."
   else
   printx "This will completely OVERWRITE the operating system on '$restoredevice'."
-  read -p "Are you sure you want to proceed? (y/N) " yn
+    readx "Are you sure you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
     printx "Operation cancelled."
     unmount_backup_device
