@@ -35,6 +35,34 @@ function unmount_backup_device () {
   sudo umount $backuppath
 }
 
+function select_snapshot () {
+  # Get the snapshots
+  unset snapshots
+  while IFS= read -r LINE; do
+    snapshot=("${LINE}")
+    if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
+      description="$(cat $snapshotpath/$snapshot/$descfile)"
+    else
+      description="<no desc>"
+    fi
+    snapshots+=("$snapshot: $description")
+  done < <(find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5)
+
+  select selection in "${snapshots[@]}" "Cancel"; do
+    case ${selection} in
+      "Cancel")
+        # If the user decides to cancel...
+        printx "Operation cancelled."
+        break
+        ;;
+      *)
+        snapshotname=$(echo $selection | cut -d ':' -f1)
+        break
+        ;;
+    esac
+  done
+}
+
 args=("$@")
 if [ $# == 0 ]; then
   show_syntax
@@ -59,33 +87,12 @@ if [[ "$EUID" != 0 ]]; then
   exit 1
 fi
 
+# --------------------
+# ----- MAINLINE -----
+# --------------------
+
 mount_backup_device
-
-# Get the snapshots
-unset snapshots
-while IFS= read -r LINE; do
-  snapshot=("${LINE}")
-  if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
-    description="$(cat $snapshotpath/$snapshot/$descfile)"
-  else
-    description="<no desc>"
-  fi
-  snapshots+=("$snapshot: $description")
-done < <(find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5)
-
-select selection in "${snapshots[@]}" "Cancel"; do
-  case ${selection} in
-    "Cancel")
-      # If the user decides to cancel...
-      printx "Operation cancelled."
-      break
-      ;;
-    *)
-      snapshotname=$(echo $selection | cut -d ':' -f1)
-      break
-      ;;
-  esac
-done
+select_snapshot
 
 if [ ! -z $snapshotname ]; then
   printx "This will completely DELETE the snapshot '$snapshotname' and is not recoverable."

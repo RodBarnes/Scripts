@@ -36,51 +36,58 @@ function unmount_backup_device () {
   sudo umount $backuppath
 }
 
+function list_snapshots () {
+  # Get the snapshots
+  unset snapshots
+  while IFS= read -r LINE; do
+    snapshot=("${LINE}")
+    if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
+      description="$(cat $snapshotpath/$snapshot/$descfile)"
+    else
+      description="<no desc>"
+    fi
+    snapshots+=("$snapshot: $description")
+  done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5 )
+
+  if [ ${#snapshots[@]} -eq 0 ]; then
+    printx "There are no backups on $backupdevice"
+  else
+    printx "Listing snapshots files on $backupdevice"
+    for snapshot in "${snapshots[@]}"; do
+      printf "$snapshot\n"
+    done
+  fi
+}
+
+function get_arguments () {
+  # Get the backup_device
+  i=0
+  if [[ "${args[$i]}" =~ "/dev/" ]]; then
+    backupdevice="${args[$i]}"
+  elif [[ "${args[$i]}" =~ $regex ]]; then
+    backupdevice="UUID=${args[$i]}"
+  else
+    # Assume it is a label
+    backupdevice="LABEL=${args[$i]}"
+  fi
+
+  # echo "Device:$backupdevice"
+}
+
 args=("$@")
 if [ $# == 0 ]; then
   show_syntax
 fi
-# echo "args=${args[@]}"
-
-# Get the backup_device
-i=0
-if [[ "${args[$i]}" =~ "/dev/" ]]; then
-  backupdevice="${args[$i]}"
-elif [[ "${args[$i]}" =~ $regex ]]; then
-  backupdevice="UUID=${args[$i]}"
-else
-  # Assume it is a label
-  backupdevice="LABEL=${args[$i]}"
-fi
-
-# echo "Device:$backupdevice"
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
   exit 1
 fi
 
+# --------------------
+# ----- MAINLINE -----
+# --------------------
+
 mount_backup_device
-
-# Get the snapshots
-unset snapshots
-while IFS= read -r LINE; do
-  snapshot=("${LINE}")
-  if [ -f "$snapshotpath/$snapshot/$descfile" ]; then
-    description="$(cat $snapshotpath/$snapshot/$descfile)"
-  else
-    description="<no desc>"
-  fi
-  snapshots+=("$snapshot: $description")
-done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5 )
-
-if [ ${#snapshots[@]} -eq 0 ]; then
-  printx "There are no backups on $backupdevice"
-else
-  printx "Listing snapshots files on $backupdevice"
-  for snapshot in "${snapshots[@]}"; do
-    printf "$snapshot\n"
-  done
-fi
-
+list_snapshots
 unmount_backup_device
