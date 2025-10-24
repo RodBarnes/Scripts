@@ -173,7 +173,8 @@ if [ ! -z $snapshotname ]; then
     exit
   else
     # Restore the snapshot
-    sudo rsync -aAX --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
+      echo rsync -aAX --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
+      sudo rsync -aAX --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" >> $rsyncout
     if [ $? -ne 0 ]; then
       printx "Something went wrong with the restore."
       cat $rsyncout
@@ -181,7 +182,7 @@ if [ ! -z $snapshotname ]; then
       exit 3
     fi
     # rm $rsyncout
-    output_file_list+=$rsyncout
+      output_file_list+="\t$rsyncout\n"
 
     if [ -f "$snapshotpath/$descfile" ]; then
       # Delete the description file from the target
@@ -208,7 +209,7 @@ if [ ! -z $snapshotname ]; then
         cat $grubupdateout
       fi
       # rm $grubupdateout
-      output_file_list+=$grubupdateout
+      output_file_list+="\t$grubupdateout\n"
 
       printx "Installing grub on $restoredevice..."
       sudo chroot "$restorepath" grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot &> $grubinstallout
@@ -217,7 +218,7 @@ if [ ! -z $snapshotname ]; then
         cat $grubinstallout
       fi
       # rm $grubinstallout
-      output_file_list+=$grubinstallout
+      output_file_list+="\t$grubinstallout\n"
 
       # Check for an existing boot entry
       osid=$(grep "^ID=" "$restorepath/etc/os-release" | cut -d'=' -f2 | tr -d '"')
@@ -265,7 +266,7 @@ if [ ! -z $snapshotname ]; then
           exit 4
         fi
         # rm $securebootout
-        output_file_list+=$securebootout
+        output_file_list+="\t$securebootout\n"
 
         # Set UEFI boot entry -- where partno is the target partition for the boot entry
         partno=$(lsblk -no PARTN "$restoredevice" 2>/dev/null || echo "2")
@@ -278,7 +279,7 @@ if [ ! -z $snapshotname ]; then
           sudo cp "$restorepath/boot/efi/EFI/$osid/$bootfile" "$restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI"
         fi
         # rm $efibootmgrout
-        output_file_list+=$efibootmgrout
+        output_file_list+="\t$efibootmgrout\n"
       fi
 
       # Unbind the directories
