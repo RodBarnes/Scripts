@@ -31,6 +31,11 @@ function show_syntax () {
 }
 
 function mount_backup_device () {
+  if [ ! -d $backuppath]; then
+    printx "'$backuppath' was not found; creating it..."
+    sudo mkdir $backuppath
+  fi
+
   sudo mount $backupdevice $backuppath
   if [ $? -ne 0 ]; then
     printx "Unable to mount the backup device."
@@ -43,6 +48,11 @@ function unmount_backup_device () {
 }
 
 function mount_restore_device () {
+  if [ ! -d $restorepath]; then
+    printx "'$restorepath' was not found; creating it..."
+    sudo mkdir $restorepath
+  fi
+
   sudo mount $restoredevice $restorepath
   if [ $? -ne 0 ]; then
     printx "Unable to mount the restore device."
@@ -53,16 +63,6 @@ function mount_restore_device () {
 function unmount_restore_device () {
   sudo umount $restorepath
 }
-
-if [ ! -d $backuppath]; then
-  printx "'$backuppath' was not found; creating it..."
-  sudo mkdir $backuppath
-fi
-
-if [ ! -d $restorepath]; then
-  printx "'$restorepath' was not found; creating it..."
-  sudo mkdir $restorepath
-fi
 
 args=("$@")
 if [ $# == 0 ]; then

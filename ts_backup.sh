@@ -30,6 +30,11 @@ function show_syntax () {
 }
 
 function mount_backup_device () {
+  if [ ! -d $backuppath]; then
+    printx "'$backuppath' was not found; creating it..."
+    sudo mkdir $backuppath
+  fi
+
   sudo mount $backupdevice $backuppath
   if [ $? -ne 0 ]; then
     printx "Unable to mount the backup backupdevice."
@@ -40,11 +45,6 @@ function mount_backup_device () {
 function unmount_backup_device () {
   sudo umount $backuppath
 }
-
-if [ ! -d $backuppath]; then
-  printx "'$backuppath' was not found; creating it..."
-  sudo mkdir $backuppath
-fi
 
 args=("$@")
 if [ $# == 0 ]; then
