@@ -206,37 +206,51 @@ if [ ! -z $snapshotname ]; then
       sudo rsync -aAX --dry-run --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" >> $rsyncout
       printx "The dry run restore has completed.  The results are found in '$rsyncout'."
   else
-  printx "This will completely OVERWRITE the operating system on '$restoredevice'."
+    printx "This will completely OVERWRITE the operating system on '$restoredevice'."
     readx "Are you sure you want to proceed? (y/N) " yn
-  if [[ $yn != "y" && $yn != "Y" ]]; then
-    printx "Operation cancelled."
-    unmount_backup_device
-    unmount_restore_device
-    exit
-  else
-    # Restore the snapshot
+    if [[ $yn != "y" && $yn != "Y" ]]; then
+      printx "Operation cancelled."
+      unmount_backup_device
+      unmount_restore_device
+      exit
+    else
+      # Restore the snapshot
       echo rsync -aAX --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
       sudo rsync -aAX --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" >> $rsyncout
-    if [ $? -ne 0 ]; then
-      printx "Something went wrong with the restore."
-      cat $rsyncout
+      if [ $? -ne 0 ]; then
+        printx "Something went wrong with the restore."
+        cat $rsyncout
+        # rm $rsyncout
+        exit 3
+      fi
       # rm $rsyncout
-      exit 3
-    fi
-    # rm $rsyncout
       output_file_list+="\t$rsyncout\n"
 
-    if [ -f "$snapshotpath/$descfile" ]; then
-      # Delete the description file from the target
-      sudo rm "$snapshotpath/$descfile"
-    fi
+      if [ -f "$snapshotpath/$descfile" ]; then
+        # Delete the description file from the target
+        sudo rm "$snapshotpath/$descfile"
+      fi
 
-    # Done
-    printx "The snapshot '$snapshotname' was successfully restored."
+      # Done
+      printx "The snapshot '$snapshotname' was successfully restored."
     fi
 
     get_bootfile
 
+    if [ -z $bootdevice ]; then
+      # Verify bootloader exists if no boot build was requested
+      if [ ! -f "$restorepath/boot/efi/EFI/debian/$bootfile" ]; then
+        printx "Checking '$restorepath/boot/efi/EFI/debian/$bootfile', it was not found."
+        while true; do
+          readx "To ensure boot into $restoredevice, proceed to update and install grub and establish a EFI boot entry?  If so, enter the boot device:" bootdevice
+          if ! sudo lsblk $bootdevice; then
+            printx "That is not a recognized device."
+          else
+            break
+          fi
+        done
+      fi
+    fi
 
     if [ ! -z $bootdevice ]; then
       # Mount the necessary directories
