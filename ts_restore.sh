@@ -20,7 +20,7 @@ rsyncout=ts_rsync.out
 grubinstallout=ts_grub-install.out
 grubupdateout=ts_update-grub.out
 securebootout=ts_secure-boot.out
-efibootmgrout=ts_efibootmgr.out
+efibootout=ts_efibootmgr.out
 regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
 
 function printx {
@@ -110,7 +110,7 @@ function get_bootfile () {
     fi
   fi
   # rm $securebootout
-  output_file_list+="\t$securebootout\n"
+  output_file_list+="$securebootout "
 }
 
 args=("$@")
@@ -226,7 +226,7 @@ if [ ! -z $snapshotname ]; then
         exit 3
       fi
       # rm $rsyncout
-      output_file_list+="\t$rsyncout\n"
+      output_file_list+="$rsyncout "
 
       if [ -f "$snapshotpath/$descfile" ]; then
         # Delete the description file from the target
@@ -240,15 +240,40 @@ if [ ! -z $snapshotname ]; then
     get_bootfile
 
     if [ -z $bootdevice ]; then
-      # Verify bootloader exists if no boot build was requested
+      # Boot build was not requested so validate restored boot components
+      # To see if it should be done anyway...
+      printx "Validating restored boot components..."
+      boot_valid=1
+      if [ ! -f "$restorepath/boot/grub/grub.cfg" ]; then
+        echo "Warning: $restorepath/boot/grub/grub.cfg not found" >> $bootvalidateout
+        boot_valid=0
+      fi
+      if [ ! -d "$restorepath/boot/grub" ]; then
+        echo "Warning: $restorepath/boot/grub directory not found" >> $bootvalidateout
+        boot_valid=0
+      fi
+      if [ -z "$(ls $restorepath/boot/vmlinuz* 2>/dev/null)" ]; then
+        echo "Warning: No kernel images found in $restorepath/boot/vmlinuz*" >> $bootvalidateout
+        boot_valid=0
+      fi
       if [ ! -f "$restorepath/boot/efi/EFI/debian/$bootfile" ]; then
-        printx "Checking '$restorepath/boot/efi/EFI/debian/$bootfile', it was not found."
+        echo "Warning: Bootloader file $restorepath/boot/efi/EFI/debian/$bootfile not found" >> $bootvalidationout
+        boot_valid=0
+      fi
+      if [ $boot_valid -eq 0 ]; then
+        # There is an issue with the boot configuration
+        printx "The boot configuration on '$restoredevice' seems incorrect.  To ensure it is bootable"
+        printx "it is recommended to update/install grub and verify/establish a EFI boot entry.  Proceed?"
         while true; do
-          readx "To ensure boot into $restoredevice, proceed to update and install grub and establish a EFI boot entry?  If so, enter the boot device:" bootdevice
-          if ! sudo lsblk $bootdevice; then
-            printx "That is not a recognized device."
-          else
+          readx "Enter the boot device (or press ENTER to skip):" bootdevice
+          if [ -z "$bootdevice" ]; then
+            printx "Skipping GRUB setup. Ensure the EFI boot entry is configured manually."
+            # echo "Skipping GRUB setup due to user input" >> $bootvalidationout
             break
+          elif sudo lsblk $bootdevice &> /dev/null; then
+            break
+          else
+            printx "That is not a recognized device."
           fi
         done
       fi
@@ -270,7 +295,7 @@ if [ ! -z $snapshotname ]; then
         cat $grubupdateout
       fi
       # rm $grubupdateout
-      output_file_list+="\t$grubupdateout\n"
+      output_file_list+="$grubupdateout "
 
       printx "Installing grub on $restoredevice..."
       sudo chroot "$restorepath" grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot &> $grubinstallout
@@ -279,7 +304,7 @@ if [ ! -z $snapshotname ]; then
         cat $grubinstallout
       fi
       # rm $grubinstallout
-      output_file_list+="\t$grubinstallout\n"
+      output_file_list+="$grubinstallout "
 
       # Check for an existing boot entry
       osid=$(grep "^ID=" "$restorepath/etc/os-release" | cut -d'=' -f2 | tr -d '"')
@@ -288,20 +313,25 @@ if [ ! -z $snapshotname ]; then
 
         # Set UEFI boot entry -- where partno is the target partition for the boot entry
         partno=$(lsblk -no PARTN "$restoredevice" 2>/dev/null || echo "2")
-        sudo efibootmgr -c -d $bootdevice -p $partno -L $osid -l "/EFI/$osid/$bootfile" &> $efibootmgrout
+        sudo efibootmgr -c -d $bootdevice -p $partno -L $osid -l "/EFI/$osid/$bootfile" &> $efibootout
         if [ $? -ne 0 ]; then
           printx "Something went wrong with 'efibootmgr':"
-          cat $efibootmgrout
-
-          # Resort to a fall back since the above failed
-          sudo cp "$restorepath/boot/efi/EFI/$osid/$bootfile" "$restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI"
+          cat $efibootout
         fi
-        # rm $efibootmgrout
-        output_file_list+="\t$efibootmgrout\n"
       fi
+      # Copy bootloader to default EFI path as a fall back
+          sudo cp "$restorepath/boot/efi/EFI/$osid/$bootfile" "$restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI"
+      if [ $? -ne 0 ]; then
+        echo "Warning: Failed to copy $bootfile to EFI/BOOT/BOOTX64.EFI" >> $efibootout
+      else
+        echo "Successfully copied $bootfile to EFI/BOOT/BOOTX64.EFI" >> $efibootout
+      fi
+      # rm $efibootout
+      output_file_list+="$efibootout "
 
       # Unbind the directories
       sudo umount "$restorepath/boot/efi" "$restorepath/dev/pts" "$restorepath/dev" "$restorepath/proc" "$restorepath/sys"
+    fi
 
       # Done
       printx "The system may now be rebooted into the restored partition."
