@@ -158,6 +158,12 @@ if [ -z $snapshotname ]; then
 fi
 
 if [ ! -z $snapshotname ]; then
+  if [ ! -z $dryrun ]; then
+    # Do a dry run and record the output
+      echo rsync -aAX --dry-run --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
+      sudo rsync -aAX --dry-run --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" >> $rsyncout
+      printx "The dry run restore has completed.  The results are found in '$rsyncout'."
+  else
   printx "This will completely OVERWRITE the operating system on '$restoredevice'."
   read -p "Are you sure you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
@@ -165,10 +171,6 @@ if [ ! -z $snapshotname ]; then
     unmount_backup_device
     unmount_restore_device
     exit
-  elif [ ! -z $dryrun ]; then
-    # Do a dry run and record the output
-      sudo rsync -aAX --dry-run --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
-      printx "The dry run restore is completed."
   else
     # Restore the snapshot
     sudo rsync -aAX --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
@@ -188,6 +190,7 @@ if [ ! -z $snapshotname ]; then
 
     # Done
     printx "The snapshot '$snapshotname' was successfully restored."
+    fi
 
     if [ ! -z $bootdevice ]; then
       # Mount the necessary directories
