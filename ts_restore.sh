@@ -12,8 +12,13 @@ stmt=$(basename $0)
 backuppath=/mnt/backup
 restorepath=/mnt/restore
 snapshotpath=$backuppath/snapshots
+excludespathname=/etc/ts_excludes
 descfile=backup.desc
-dryrun_log=ts_restore_dryrun.log
+rsyncout=ts_rsync.out
+grubinstallout=ts_grub-install.out
+grubupdateout=ts_update-grub.out
+securebootout=ts_secure-boot.out
+efibootmgrout=ts_efibootmgr.out
 regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
 
 function printx {
@@ -157,7 +162,7 @@ if [ -z $snapshotname ]; then
 fi
 
 if [ ! -z $snapshotname ]; then
-  printx "This will completely OVERWRITE the operating system on '$restoredevice' and is NOT reversible."
+  printx "This will completely OVERWRITE the operating system on '$restoredevice'."
   read -p "Are you sure you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
     printx "Operation cancelled."
@@ -166,22 +171,23 @@ if [ ! -z $snapshotname ]; then
     exit
   elif [ ! -z $dryrun ]; then
     # Do a dry run and record the output
-      sudo rsync -aAX --dry-run --delete --verbose --exclude-from=/etc/ts_excludes $snapshotpath/$snapshotname/ $restorepath/ > $dryrun_log
-      printx "The dry run restore is completed.  The output is located in '$dryrun_log'."
+      sudo rsync -aAX --dry-run --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
+      printx "The dry run restore is completed."
   else
     # Restore the snapshot
-    sudo rsync -aAX --delete --exclude-from=/etc/ts_excludes $snapshotpath/$snapshotname/ $restorepath/ > rsync.out
+    sudo rsync -aAX --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > $rsyncout
     if [ $? -ne 0 ]; then
       printx "Something went wrong with the restore."
-      cat rsync.out
-      rm rsync.out
+      cat $rsyncout
+      # rm $rsyncout
       exit 3
     fi
-    rm rsync.out
+    # rm $rsyncout
+    output_file_list+=$rsyncout
 
-    if [ -f $snapshotpath/$descfile ]; then
+    if [ -f "$snapshotpath/$descfile" ]; then
       # Delete the description file from the target
-      sudo rm $snapshotpath/$descfile
+      sudo rm "$snapshotpath/$descfile"
     fi
 
     # Done
@@ -189,52 +195,99 @@ if [ ! -z $snapshotname ]; then
 
     if [ ! -z $bootdevice ]; then
       # Mount the necessary directories
-      sudo mount $bootdevice $restorepath/boot/efi
-      sudo mount --bind /dev $restorepath/dev
-      sudo mount --bind /proc $restorepath/proc
-      sudo mount --bind /sys $restorepath/sys
-      sudo mount --bind /dev/pts $restorepath/dev/pts
+      sudo mount $bootdevice "$restorepath/boot/efi"
+      sudo mount --bind /dev "$restorepath/dev"
+      sudo mount --bind /proc "$restorepath/proc"
+      sudo mount --bind /sys "$restorepath/sys"
+      sudo mount --bind /dev/pts "$restorepath/dev/pts"
 
       printx "Updating grub on $restoredevice..."
       # Use chroot to rebuild grub on the restored partion
-      sudo chroot $restorepath update-grub &> update-grub.out
+      sudo chroot "$restorepath" update-grub &> $grubupdateout
       if [ $? -ne 0 ]; then
         printx "Something went wrong with 'update-grub':"
-        cat update-grub.out
+        cat $grubupdateout
       fi
-      rm update-grub.out
+      # rm $grubupdateout
+      output_file_list+=$grubupdateout
 
       printx "Installing grub on $restoredevice..."
-      sudo chroot $restorepath grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot &> grub-install.out
+      sudo chroot "$restorepath" grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot &> $grubinstallout
       if [ $? -ne 0 ]; then
         printx "Something went wrong with 'grub-install':"
-        cat grub-install.out
+        cat $grubinstallout
       fi
-      rm grub-install.out
+      # rm $grubinstallout
+      output_file_list+=$grubinstallout
 
-      printx "Building the UEFI boot entry on $bootdevice with an entry for $restoredevice..."
+      # Check for an existing boot entry
+      osid=$(grep "^ID=" "$restorepath/etc/os-release" | cut -d'=' -f2 | tr -d '"')
+      if ! sudo efibootmgr | grep -q "$osid"; then
+        printx "Building the UEFI boot entry on $bootdevice with an entry for $restoredevice..."
 
-      # Check Secure Boot status
-      bootfile="grubx64.efi"  # Default for secure boot
-      if sudo mokutil --sb-state &> /dev/null; then
-        # Secure Boot enabled (exit code 0); confirm existence of shimx64.efi
-        if [ -f "$restorepath/boot/efi/EFI/debian/shimx64.efi" ]; then
-          bootfile="shimx64.efi"
+        # Check Secure Boot status
+        bootfile="grubx64.efi"  # Default for non-secure boot
+        secureboot_var="/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c"
+        setupmode_var="/sys/firmware/efi/efivars/SetupMode-8be4df61-93ca-11d2-aa0d-00e098032b8c"
+        printx "Checking SecureBoot EFI variable" > $securebootout
+        if [ -f "$secureboot_var" ]; then
+          secureboot_value=$(sudo hexdump -v -e '/1 "%02x"' "$secureboot_var" | tail -c 2)
+          echo "SecureBoot last byte: $secureboot_value" >> $securebootout
+          if [ -f "$setupmode_var" ]; then
+            setupmode_value=$(sudo hexdump -v -e '/1 "%02x"' "$setupmode_var" | tail -c 2)
+            echo "SetupMode last byte: $setupmode_value" >> $securebootout
+          else
+            echo "SetupMode variable not found" >> $securebootout
+          fi
+          if [ "$secureboot_value" = "01" ]; then
+            # Secure Boot enabled; use shimx64.efi if present
+            if [ -f "$restorepath/boot/efi/EFI/debian/shimx64.efi" ]; then
+              bootfile="shimx64.efi"
+              printx "SecureBoot enabled (EFI variable: $secureboot_value); using $bootfile."
+            else
+              printx "SecureBoot enabled but shimx64.efi not found; using $bootfile."
+            fi
+          else
+            printx "SecureBoot disabled (EFI variable: $secureboot_value); using $bootfile."
+          fi
+        else
+          printx "Warning: SecureBoot EFI variable not found; defaulting to $bootfile."
+          echo "SecureBoot variable not found; defaulting to $bootfile" >> $securebootout
+          if [ -f "$setupmode_var" ]; then
+            setupmode_value=$(sudo hexdump -v -e '/1 "%02x"' "$setupmode_var" | tail -c 2)
+            echo "SetupMode last byte: $setupmode_value" >> $securebootout
+          fi
         fi
-      fi
 
-      # Set UEFI boot entry -- where partno is the target partition for the boot entry
-      osid=$(grep "^ID=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
-      partno="${restoredevice: -1}"
-      sudo efibootmgr -c -d $bootdevice -p $partno -L $osid -l "/EFI/$osid/$bootfile.efi" &> /dev/null
-      # Establish a fall back in case the above fails to succeed
-      sudo cp $restorepath/boot/efi/EFI/$osid/$bootfile.efi $restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI
+        # Verify bootloader exists
+        if [ ! -f "$restorepath/boot/efi/EFI/debian/$bootfile" ]; then
+          printx "Error: Bootloader file $restorepath/boot/efi/EFI/debian/$bootfile not found."
+          echo "Error: Bootloader file $restorepath/boot/efi/EFI/debian/$bootfile not found" >> $securebootout
+          exit 4
+        fi
+        # rm $securebootout
+        output_file_list+=$securebootout
+
+        # Set UEFI boot entry -- where partno is the target partition for the boot entry
+        partno=$(lsblk -no PARTN "$restoredevice" 2>/dev/null || echo "2")
+        sudo efibootmgr -c -d $bootdevice -p $partno -L $osid -l "/EFI/$osid/$bootfile" &> $efibootmgrout
+        if [ $? -ne 0 ]; then
+          printx "Something went wrong with 'efibootmgr':"
+          cat $efibootmgrout
+
+          # Resort to a fall back since the above failed
+          sudo cp "$restorepath/boot/efi/EFI/$osid/$bootfile" "$restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI"
+        fi
+        # rm $efibootmgrout
+        output_file_list+=$efibootmgrout
+      fi
 
       # Unbind the directories
-      sudo umount $restorepath/boot/efi $restorepath/dev/pts $restorepath/dev $restorepath/proc $restorepath/sys
+      sudo umount "$restorepath/boot/efi" "$restorepath/dev/pts" "$restorepath/dev" "$restorepath/proc" "$restorepath/sys"
 
       # Done
       printx "The system may now be rebooted into the restored partition."
+      printx "Review these output files for details: $output_file_list"
     fi
   fi
 else
