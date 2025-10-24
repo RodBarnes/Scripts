@@ -102,7 +102,7 @@ if [[ $avail -lt $minspace ]]; then
 fi
 
 # Create the snapshot
-if [ -n "$(find $snapshotpath -mindepth 1 -maxdepth 1 -type f -o -type d 2>/dev/null)" ]; then
+if [ -n "$(find $snapshotpath -mindepth 1 -maxdepth 1 -type f -o -type d 2> /dev/null)" ]; then
   printx "Creating incremental snapshot..."
   # Snapshots exist so create incremental snapshot referencing the latest
   sudo rsync -aAX $dryrun --delete --link-dest=../latest --exclude-from=/etc/ts_excludes / "$snapshotpath/$snapshotname/"

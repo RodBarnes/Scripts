@@ -197,14 +197,14 @@ if [ ! -z $snapshotname ]; then
 
       printx "Updating grub on $restoredevice..."
       # Use chroot to rebuild grub on the restored partion
-      sudo chroot $restorepath update-grub > update-grub.out 2>1
+      sudo chroot $restorepath update-grub &> update-grub.out
       if [ $? -ne 0 ]; then
         printx "Something went wrong with 'update-grub':"
         cat update-grub.out
         rm update-grub.out
       fi
       printx "Installing grub on $restoredevice..."
-      sudo chroot $restorepath grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot > grub-install.out 2>1
+      sudo chroot $restorepath grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot &> grub-install.out
       if [ $? -ne 0 ]; then
         printx "Something went wrong with 'grub-install':"
         cat grub-install.out
@@ -214,14 +214,7 @@ if [ ! -z $snapshotname ]; then
       printx "Building the UEFI boot entry on $bootdevice with an entry for $restoredevice..."
       osid=$(grep "^ID=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
       partno="${restoredevice: -1}"
-      # Look for shimx64.efi; if present, use it else use grubx64.efi
-      if [ -f $restorepath/boot/efi/EFI/$osid/shimx64.efi ]; then
-        bootfile="shimx64"
-      else
-        bootfile=grubx64
-      fi
-      # Set UEFI boot entry -- where partno is the target partition for the boot entry
-      sudo efibootmgr -c -d $bootdevice -p $partno -L $osid -l "/EFI/$osid/$bootfile.efi" > /dev/null 2>1
+      sudo efibootmgr -c -d $bootdevice -p $partno -L $osid -l "/EFI/$osid/$bootfile.efi" &> /dev/null
       # Establish a fall back in case the above fails to succeed
       sudo cp $restorepath/boot/efi/EFI/$osid/$bootfile.efi $restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI
 
