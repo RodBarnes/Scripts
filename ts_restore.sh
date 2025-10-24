@@ -21,10 +21,10 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <backup_device> <restore_device> [-t] [-g] [-s snapshot]"
+  printx "Syntax: $stmt <backup_device> <restore_device> [-t] [-g <boot_device>] [-s snapshot]"
   printx "Where:  <backup_device> and <restore_device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   printx "        [-t] means to do a test without actually creating the backup; i.e., an rsync dry-run"
-  printx "        [-g] means to rebuild grub on the restored partition"
+  printx "        [-g] means to rebuild grub on the specified device; e.g., /dev/sda1"
   printx "        [snapshot] is the name (timestamp) of the snapshot to restore."
   printx "If no snapshot is specified, the device will be queried for the available snapshots."
   exit  
@@ -99,7 +99,8 @@ while [ $i -le $check ]; do
   if [ "${args[$i]}" == "-t" ]; then
     dryrun=--dry-run
   elif [ "${args[$i]}" == "-g" ]; then
-    fixgrub=true
+    ((i++))
+    bootdevice="${args[$i]}"
   elif [ "${args[$i]}" == "-s" ]; then
     ((i++))
     snapshotname="${args[$i]}"
@@ -172,39 +173,35 @@ if [ ! -z $snapshotname ]; then
     # Done
     printx "The snapshot '$snapshotpath' was successfully restored."
 
-    if [ ! -z $fixgrub ]; then
+    if [ ! -z $bootdevice ]; then
       # Restore grub/boot state
       printx "Rebuilding grub on $restoredevice"
 
       # Bind the necessary directories for chroot
-      printx "Binding the directories..."
       sudo mount --bind /dev $restorepath/dev
       sudo mount --bind /proc $restorepath/proc
       sudo mount --bind /sys $restorepath/sys
       sudo mount --bind /dev/pts $restorepath/dev/pts
 
+      printx "Updating and installing grub..."
       # Use chroot to rebuild grub on the restored partion
-      printx "Doing chroot..."  
       sudo chroot $restorepath update-grub
       sudo chroot $restorepath grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot
 
-      # Set UEFI boot entry -- where partition 2 is the target
       printx "Building the UEFI boot entry..."
-
-      # ls /boot/efi/EFI/debian/shimx64.efi
-
+      ID=$(grep "^ID=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
+      PARTNO="${$restoredevice: -1}"
       # Look for shimx64.efi; if present, use it else use grubx64.efi
-      if [ -f $restorepath/boot/efi/EFI/debian/shimx64.efi]; then
-        # Set UEFI boot entry -- where partition 2 is the target
-        sudo efibootmgr -c -d /dev/sda1 -p 2 -L "Debian" -l "\EFI\debian\shimx64.efi"
-        sudo cp $restorepath/boot/efi/EFI/debian/shimx64.efi $restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI
+      if [ -f $restorepath/boot/efi/EFI/$ID/shimx64.efi]; then
+        bootfile="shimx64"
       else
-        # Set UEFI boot entry -- where partition 2 is the target
-        sudo efibootmgr -c -d /dev/sda1 -p 2 -L "Debian" -l "\EFI\debian\grubx64.efi"
-        sudo cp $restorepath/boot/efi/EFI/debian/grubx64.efi $restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI
+        bootfile=grubx64
       fi
+      # Set UEFI boot entry -- where PARTNO is the target partition for the boot entry
+      sudo efibootmgr -c -d $bootdevice -p $PARTNO -L "Debian" -l "\EFI\$ID\$bootfile.efi"
+      # Establish a fall back in case the above fails to succeed
+      sudo cp $restorepath/boot/efi/EFI/$ID/$bootfile.efi $restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI
 
-      printx "Unbinding the directories..."
       # Unbind the directories
       sudo umount $restorepath/boot/efi $restorepath/dev/pts $restorepath/dev $restorepath/proc $restorepath/sys
 
