@@ -6,6 +6,8 @@
 
 # NOTE: This script expects to find the listed mountpoints.  If not present, they will be created.
 
+# Grok conversation URL: https://grok.com/c/61141f41-643d-4a52-93c1-a0e58cd443d7
+
 source /usr/local/lib/colors
 
 command=$(basename $0)
@@ -303,7 +305,11 @@ if [ ! -z $snapshotname ]; then
 
       # Done
       printx "The system may now be rebooted into the restored partition."
-      printx "Review these output files for details: $output_file_list"
+    printx "\nThese output files were created: $output_file_list"
+    readx "Do you want to delete them (y/N) " yn
+    if [[ $yn == "y" || $yn == "Y" ]]; then
+      sudo rm $output_file_list
+      printx "Files deleted."
     fi
   fi
 else
