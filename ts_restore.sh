@@ -74,6 +74,43 @@ function unmount_restore_device () {
   sudo umount $restorepath
 }
 
+function get_bootfile () {
+  # Check Secure Boot status
+  bootfile="grubx64.efi"  # Default for non-secure boot
+  securebootvar="/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c"
+  setupmodevar="/sys/firmware/efi/efivars/SetupMode-8be4df61-93ca-11d2-aa0d-00e098032b8c"
+  echo "Checking SecureBoot EFI variable" > $securebootout
+  if [ -f "$securebootvar" ]; then
+    secureboot=$(sudo hexdump -v -e '/1 "%02x"' "$securebootvar" | tail -c 2)
+    echo "SecureBoot last byte: $secureboot" >> $securebootout
+    if [ -f "$setupmodevar" ]; then
+      setupmode=$(sudo hexdump -v -e '/1 "%02x"' "$setupmodevar" | tail -c 2)
+      echo "SetupMode last byte: $setupmode" >> $securebootout
+    else
+      echo "SetupMode variable not found" >> $securebootout
+    fi
+    if [ "$secureboot" = "01" ]; then
+      # Secure Boot enabled; use shimx64.efi if present
+      if [ -f "$restorepath/boot/efi/EFI/debian/shimx64.efi" ]; then
+        bootfile="shimx64.efi"
+        echo "SecureBoot enabled (EFI variable: $secureboot); using $bootfile." >> $securebootout
+      else
+        echo "SecureBoot enabled but shimx64.efi not found; using $bootfile." >> $securebootout
+      fi
+    else
+      echo "SecureBoot disabled (EFI variable: $secureboot); using $bootfile." >> $securebootout
+    fi
+  else
+    echo "SecureBoot variable not found; defaulting to $bootfile" >> $securebootout
+    if [ -f "$setupmodevar" ]; then
+      setupmode=$(sudo hexdump -v -e '/1 "%02x"' "$setupmodevar" | tail -c 2)
+      echo "SetupMode last byte: $setupmode" >> $securebootout
+    fi
+  fi
+  # rm $securebootout
+  output_file_list+="\t$securebootout\n"
+}
+
 args=("$@")
 if [ $# == 0 ]; then
   show_syntax
@@ -198,6 +235,9 @@ if [ ! -z $snapshotname ]; then
     printx "The snapshot '$snapshotname' was successfully restored."
     fi
 
+    get_bootfile
+
+
     if [ ! -z $bootdevice ]; then
       # Mount the necessary directories
       sudo mount $bootdevice "$restorepath/boot/efi"
@@ -229,49 +269,6 @@ if [ ! -z $snapshotname ]; then
       osid=$(grep "^ID=" "$restorepath/etc/os-release" | cut -d'=' -f2 | tr -d '"')
       if ! sudo efibootmgr | grep -q "$osid"; then
         printx "Building the UEFI boot entry on $bootdevice with an entry for $restoredevice..."
-
-        # Check Secure Boot status
-        bootfile="grubx64.efi"  # Default for non-secure boot
-        secureboot_var="/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c"
-        setupmode_var="/sys/firmware/efi/efivars/SetupMode-8be4df61-93ca-11d2-aa0d-00e098032b8c"
-        printx "Checking SecureBoot EFI variable" > $securebootout
-        if [ -f "$secureboot_var" ]; then
-          secureboot_value=$(sudo hexdump -v -e '/1 "%02x"' "$secureboot_var" | tail -c 2)
-          echo "SecureBoot last byte: $secureboot_value" >> $securebootout
-          if [ -f "$setupmode_var" ]; then
-            setupmode_value=$(sudo hexdump -v -e '/1 "%02x"' "$setupmode_var" | tail -c 2)
-            echo "SetupMode last byte: $setupmode_value" >> $securebootout
-          else
-            echo "SetupMode variable not found" >> $securebootout
-          fi
-          if [ "$secureboot_value" = "01" ]; then
-            # Secure Boot enabled; use shimx64.efi if present
-            if [ -f "$restorepath/boot/efi/EFI/debian/shimx64.efi" ]; then
-              bootfile="shimx64.efi"
-              printx "SecureBoot enabled (EFI variable: $secureboot_value); using $bootfile."
-            else
-              printx "SecureBoot enabled but shimx64.efi not found; using $bootfile."
-            fi
-          else
-            printx "SecureBoot disabled (EFI variable: $secureboot_value); using $bootfile."
-          fi
-        else
-          printx "Warning: SecureBoot EFI variable not found; defaulting to $bootfile."
-          echo "SecureBoot variable not found; defaulting to $bootfile" >> $securebootout
-          if [ -f "$setupmode_var" ]; then
-            setupmode_value=$(sudo hexdump -v -e '/1 "%02x"' "$setupmode_var" | tail -c 2)
-            echo "SetupMode last byte: $setupmode_value" >> $securebootout
-          fi
-        fi
-
-        # Verify bootloader exists
-        if [ ! -f "$restorepath/boot/efi/EFI/debian/$bootfile" ]; then
-          printx "Error: Bootloader file $restorepath/boot/efi/EFI/debian/$bootfile not found."
-          echo "Error: Bootloader file $restorepath/boot/efi/EFI/debian/$bootfile not found" >> $securebootout
-          exit 4
-        fi
-        # rm $securebootout
-        output_file_list+="\t$securebootout\n"
 
         # Set UEFI boot entry -- where partno is the target partition for the boot entry
         partno=$(lsblk -no PARTN "$restoredevice" 2>/dev/null || echo "2")
