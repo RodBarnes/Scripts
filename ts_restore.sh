@@ -110,7 +110,6 @@ function get_bootfile () {
       echo "SetupMode last byte: $setupmode" >> $securebootout
     fi
   fi
-  # rm $securebootout
   output_file_list+="$securebootout "
 }
 
@@ -223,10 +222,8 @@ if [ ! -z $snapshotname ]; then
       if [ $? -ne 0 ]; then
         printx "Something went wrong with the restore."
         cat $rsyncout
-        # rm $rsyncout
         exit 3
       fi
-      # rm $rsyncout
       output_file_list+="$rsyncout "
 
       if [ -f "$snapshotpath/$descfile" ]; then
@@ -302,7 +299,6 @@ if [ ! -z $snapshotname ]; then
         printx "Something went wrong with 'update-grub':"
         cat $grubupdateout
       fi
-      # rm $grubupdateout
       output_file_list+="$grubupdateout "
 
       printx "Installing grub on $restoredevice..."
@@ -311,7 +307,6 @@ if [ ! -z $snapshotname ]; then
         printx "Something went wrong with 'grub-install':"
         cat $grubinstallout
       fi
-      # rm $grubinstallout
       output_file_list+="$grubinstallout "
 
       # Check for an existing boot entry
@@ -334,7 +329,6 @@ if [ ! -z $snapshotname ]; then
       else
         echo "Successfully copied $bootfile to EFI/BOOT/BOOTX64.EFI" >> $efibootout
       fi
-      # rm $efibootout
       output_file_list+="$efibootout "
 
       # Unbind the directories
