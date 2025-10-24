@@ -4,7 +4,7 @@
 # One of the followin is required parameter: <device>, <label>, or <uuid> for mounting the device
 # Optional parameter: -t -- Include to do a dry-run
 
-# NOTE: This script expects to find the listed mountpoints.  If not present, it will fail.
+# NOTE: This script expects to find the listed mountpoints.  If not present, they will be created.
 
 source /usr/local/lib/colors
 
@@ -54,6 +54,16 @@ function unmount_restore_device () {
   sudo umount $restorepath
 }
 
+if [ ! -d $backuppath]; then
+  printx "'$backuppath' was not found; creating it..."
+  sudo mkdir $backuppath
+fi
+
+if [ ! -d $restorepath]; then
+  printx "'$restorepath' was not found; creating it..."
+  sudo mkdir $restorepath
+fi
+
 args=("$@")
 if [ $# == 0 ]; then
   show_syntax
@@ -88,7 +98,7 @@ check=$#
 while [ $i -le $check ]; do
   if [ "${args[$i]}" == "-t" ]; then
     dryrun=--dry-run
-  elif [ "${args[$i]}" == "-b" ]; then
+  elif [ "${args[$i]}" == "-g" ]; then
     fixgrub=true
   elif [ "${args[$i]}" == "-s" ]; then
     ((i++))
@@ -100,6 +110,7 @@ done
 echo "Backup device:$backupdevice"
 echo "Restore device:$restoredevice"
 echo "Dry-run:$dryrun"
+echo "Fixgrub:$fixgrub"
 echo "Snapshot:$snapshotname"
 
 if [[ "$EUID" != 0 ]]; then
@@ -156,7 +167,7 @@ if [ ! -z $snapshotname ]; then
     sudo rsync -aAX --delete --exclude-from=/etc/ts_excludes $snapshotpath/$snapshotname/ $restorepath/
 
     # Delete the description file from the target
-    echo "sudo rm $snapshotpath/$descfile"
+    sudo rm $snapshotpath/$descfile
 
     # Done
     printx "The snapshot '$snapshotpath' was successfully restored."

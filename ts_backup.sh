@@ -41,6 +41,11 @@ function unmount_backup_device () {
   sudo umount $backuppath
 }
 
+if [ ! -d $backuppath]; then
+  printx "'$backuppath' was not found; creating it..."
+  sudo mkdir $backuppath
+fi
+
 args=("$@")
 if [ $# == 0 ]; then
   show_syntax
