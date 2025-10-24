@@ -3,6 +3,7 @@
 # Show info for all non-removable block devices; aka drives
 
 source /usr/local/lib/colors
+
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
@@ -16,9 +17,13 @@ if [ -z $(command -v smartctl) ]; then
   exit
 fi
 
+function show_syntax () {
+  printx "Syntax: $scriptname [drive]"
+  printx "Where [drive] is an optional drive designator; e.g., /dev/sda, sda, etc."
+  printx "If no drive is specified, then all drives are iterated.\n"
+}
 
-
-showInfo () {
+function showInfo () {
   printx "/dev/$1"
 
   output=$(sudo smartctl -a /dev/$1)
@@ -38,9 +43,7 @@ showInfo () {
 if [[ $# == 1 ]]; then
   arg=$1
   if [ $arg == "?" ] || [ $arg == "-h" ]; then
-    printx "USAGE: $scriptname [drive]"
-    printx "Where [drive] is an optional drive designator; e.g., /dev/sda, sda, etc."
-    printx "If no drive is specified, then all drives are iterated.\n"
+    show_syntax
   else
     # Assume a specific block device was provided
     specific=${arg#/dev/}
