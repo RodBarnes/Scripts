@@ -7,10 +7,10 @@ function printx {
 }
 
 # Show how long a process has been running
-stmt=$(basename $0)
+scriptname=$(basename $0)
 
 if [ -z $1 ]; then
-	printx "Syntax: $stmt <program_name> [<user>]"
+	printx "Syntax: $scriptname <program_name> [<user>]"
 	exit 1
 fi
 

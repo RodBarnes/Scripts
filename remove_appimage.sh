@@ -4,7 +4,7 @@
 # This has been tested on LinxuMint and works well.
 # It should work under Fedora and downstream debian-based with little or no changes.
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 
 source /usr/local/lib/colors
 function printx {
@@ -20,7 +20,7 @@ fi
 # This is a test comment to demonstrate an addition.
 
 if [[ $# < 1 ]]; then
-  printx "Syntax: $stmt 'command'\nWhere:  command is the name to be used to invoke the program\n"
+  printx "Syntax: $scriptname 'command'\nWhere:  command is the name to be used to invoke the program\n"
   exit
 fi
 

@@ -14,9 +14,9 @@ if [[ "$EUID" = 0 ]]; then
   exit
 fi
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 if [[ $# < 2 ]]; then
-  printx "Syntax: $stmt 'command' 'appimage'\nWhere:  command is the name to be used to invoke the program\n        appimage is the filename (without extension) of the AppImage\n"
+  printx "Syntax: $scriptname 'command' 'appimage'\nWhere:  command is the name to be used to invoke the program\n        appimage is the filename (without extension) of the AppImage\n"
   exit
 fi
 

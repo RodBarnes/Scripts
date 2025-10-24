@@ -8,9 +8,9 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 if [[ $# < 1 ]]; then
-  printx "Syntax: $stmt 'filename'\nWhere:  filename is the name of the archive containing the session buddy content"
+  printx "Syntax: $scriptname 'filename'\nWhere:  filename is the name of the archive containing the session buddy content"
   printx "NOTE: It is assumed the archive is located in ~/Downloads\n"
   exit
 fi

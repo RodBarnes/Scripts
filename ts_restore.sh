@@ -15,7 +15,7 @@
 
 source /usr/local/lib/colors
 
-command=$(basename $0)
+scriptname=$(basename $0)
 backuppath=/mnt/backup
 restorepath=/mnt/restore
 snapshotpath=$backuppath/snapshots
@@ -39,7 +39,7 @@ function readx {
 }
 
 function show_syntax () {
-  printx "Syntax: $command <backup_device> <restore_device> [-d] [-g <boot_device>] [-s snapshot]"
+  printx "Syntax: $scriptname <backup_device> <restore_device> [-d] [-g <boot_device>] [-s snapshot]"
   printx "Where:  <backup_device> and <restore_device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   printx "        [-d] means to do a 'dry-run' test without actually creating the backup."
   printx "        [-g] means to rebuild grub on the specified device; e.g., /dev/sda1."

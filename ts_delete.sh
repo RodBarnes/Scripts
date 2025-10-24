@@ -7,7 +7,7 @@
 
 source /usr/local/lib/colors
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 backuppath=/mnt/backup
 snapshotpath=$backuppath/snapshots
 descfile=snapshot.desc
@@ -18,7 +18,7 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <backup_device>"
+  printx "Syntax: $scriptname <backup_device>"
   printx "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   exit  
 }

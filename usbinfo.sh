@@ -5,7 +5,7 @@
 
 source /usr/local/lib/colors
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"

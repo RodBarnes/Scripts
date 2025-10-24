@@ -11,12 +11,12 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 
 if [[ $# == 1 ]]; then
   arg=$1
   if [ $arg == "?" ] || [ $arg == "-h" ]; then
-    printx "Syntax: $stmt <kernel>\nWhere:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
+    printx "Syntax: $scriptname <kernel>\nWhere:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
     printx "If no kernel is specified it will rebuild the current initramfs.\n"
     exit
   else

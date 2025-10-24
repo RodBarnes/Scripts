@@ -9,7 +9,7 @@
 
 source /usr/local/lib/colors
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 backuppath=/mnt/backup
 snapshotpath=$backuppath/snapshots
 snapshotname=$(date +%Y-%m-%d-%H%M%S)
@@ -22,7 +22,7 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $stmt <backup_device> [-t] [-c comment]"
+  printx "Syntax: $scriptname <backup_device> [-t] [-c comment]"
   printx "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   printx "        [-t] means to do a test without actually creating the backup; i.e., an rsync dry-run"
   printx "        [-c comment] is a quote-bounded comment for the snapshot"

@@ -8,10 +8,10 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
-stmt=$(basename $0)
+scriptname=$(basename $0)
 
 if [[ $# < 1 ]]; then
-  printx "Syntax: $stmt 'vm_name'\nWhere:  vm_name is the name of the VM to be started or shutdown\n"
+  printx "Syntax: $scriptname 'vm_name'\nWhere:  vm_name is the name of the VM to be started or shutdown\n"
   exit
 fi
 

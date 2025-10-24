@@ -12,7 +12,7 @@ function printx {
 }
 
 if [[ $# < 1 ]]; then
-  printx "Syntax: $stmt 'directory'"
+  printx "Syntax: $scriptname 'directory'"
   printx "Where:  directory is the name of the location where the log should be stored"
   printx "        This is intended to be used as a startup application."
   exit
