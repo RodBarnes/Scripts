@@ -21,6 +21,7 @@ grubinstallout=ts_grub-install.out
 grubupdateout=ts_update-grub.out
 securebootout=ts_secure-boot.out
 efibootout=ts_efibootmgr.out
+bootvalidateout=ts_boot_validation.out
 regex="^\S{8}-\S{4}-\S{4}-\S{4}-\S{12}$"
 
 function printx {
@@ -282,6 +283,13 @@ if [ ! -z $snapshotname ]; then
     if [ ! -z $bootdevice ]; then
       # Mount the necessary directories
       sudo mount $bootdevice "$restorepath/boot/efi"
+      if [ $? -ne 0 ]; then
+        printx "Unable to mount the EFI System Partition on $bootdevice."
+        unmount_backup_device
+        unmount_restore_device
+        printx "Review these output files for details: $output_file_list"
+        exit 2
+      fi
       sudo mount --bind /dev "$restorepath/dev"
       sudo mount --bind /proc "$restorepath/proc"
       sudo mount --bind /sys "$restorepath/sys"
@@ -320,7 +328,7 @@ if [ ! -z $snapshotname ]; then
         fi
       fi
       # Copy bootloader to default EFI path as a fall back
-          sudo cp "$restorepath/boot/efi/EFI/$osid/$bootfile" "$restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI"
+      sudo cp "$restorepath/boot/efi/EFI/$osid/$bootfile" "$restorepath/boot/efi/EFI/BOOT/BOOTX64.EFI"
       if [ $? -ne 0 ]; then
         echo "Warning: Failed to copy $bootfile to EFI/BOOT/BOOTX64.EFI" >> $efibootout
       else
@@ -333,8 +341,8 @@ if [ ! -z $snapshotname ]; then
       sudo umount "$restorepath/boot/efi" "$restorepath/dev/pts" "$restorepath/dev" "$restorepath/proc" "$restorepath/sys"
     fi
 
-      # Done
-      printx "The system may now be rebooted into the restored partition."
+    # Done
+    printx "The system may now be rebooted into the restored partition."
     printx "\nThese output files were created: $output_file_list"
     readx "Do you want to delete them (y/N) " yn
     if [[ $yn == "y" || $yn == "Y" ]]; then
