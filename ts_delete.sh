@@ -63,23 +63,23 @@ function select_snapshot () {
     ((count++))
 
     COLUMNS=1
-  select selection in "${snapshots[@]}" "Cancel"; do
+    select selection in "${snapshots[@]}" "Cancel"; do
       if [[ "$REPLY" =~ ^[0-9]+$ && "$REPLY" -ge 1 && "$REPLY" -le $count ]]; then
-    case ${selection} in
-      "Cancel")
-        # If the user decides to cancel...
+        case ${selection} in
+          "Cancel")
+            # If the user decides to cancel...
             echo "Operation cancelled."
-        break
-        ;;
-      *)
-        snapshotname=$(echo $selection | cut -d ':' -f1)
-        break
-        ;;
-    esac
+            break
+            ;;
+          *)
+            snapshotname=$(echo $selection | cut -d ':' -f1)
+            break
+            ;;
+        esac
       else
         printx "Invalid selection. Please enter a number between 1 and $count."
       fi
-  done
+    done
   fi
 }
 
@@ -126,6 +126,14 @@ if [ ! -z $snapshotname ]; then
   else
     sudo rm -Rf $snapshotpath/$snapshotname
     echo "'$snapshotname' has been deleted."
+    dircnt=$(find /mnt/backup/snapshots -mindepth 1 -type d | wc -l)
+    if [[ $dircnt > 0 ]]; then
+      # There are still backups so fix the link to latest
+      latest=$(find /mnt/backup/snapshots -maxdepth 1 -type d -regextype posix-extended -regex '.*/[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}' | while read -r dir; do basename "$dir"; done | sort -r | head -n 1)
+      ln -sfn $latest $snapshotpath/latest
+    else
+      sudo rm $snapshotpath/latest
+    fi
   fi
 fi
 
