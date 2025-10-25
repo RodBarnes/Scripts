@@ -93,17 +93,26 @@ function select_snapshot () {
     snapshots+=("${LINE}")
   done < <( find $snapshotpath -mindepth 1 -maxdepth 1 -type d | cut -d '/' -f5 )
 
+  # Get the count of options and increment to include the cancel
+  count="${#snapshots[@]}"
+  ((count++))
+
+  COLUMNS=1
   select selection in "${snapshots[@]}" "Cancel"; do
-    case ${selection} in
-      "Cancel")
-        # If the user decides to cancel...
-        break
-        ;;
-      *)
-        snapshotname=$selection
-        break
-        ;;
-    esac
+    if [[ "$REPLY" =~ ^[0-9]+$ && "$REPLY" -ge 1 && "$REPLY" -le $count ]]; then
+      case ${selection} in
+        "Cancel")
+          # If the user decides to cancel...
+          break
+          ;;
+        *)
+          snapshotname=$selection
+          break
+          ;;
+      esac
+    else
+      printx "Invalid selection. Please enter a number between 1 and $count."
+    fi
   done
 }
 
