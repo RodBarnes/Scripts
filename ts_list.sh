@@ -19,8 +19,9 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $scriptname <backup_device>"
-  printx "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
+  echo "List all snapshots created by ts_backup."
+  echo "Syntax: $scriptname <backup_device>"
+  echo "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   exit  
 }
 
@@ -52,7 +53,7 @@ function list_snapshots () {
   if [ ${#snapshots[@]} -eq 0 ]; then
     printx "There are no backups on $backupdevice"
   else
-    printx "Listing snapshots files on $backupdevice"
+    printx "Snapshot files on $backupdevice"
     for snapshot in "${snapshots[@]}"; do
       printf "$snapshot\n"
     done

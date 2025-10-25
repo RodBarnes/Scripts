@@ -22,15 +22,16 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $scriptname <backup_device> [-t] [-c comment]"
-  printx "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
-  printx "        [-t] means to do a test without actually creating the backup; i.e., an rsync dry-run"
-  printx "        [-c comment] is a quote-bounded comment for the snapshot"
+  echo "Create a TimeShift-like snapshot of the system file excluding those identified in /etc/backup-excludes."
+  echo "Syntax: $scriptname <backup_device> [-d] [-c comment]"
+  echo "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
+  echo "        [-d] means to do a 'dry-run' test without actually restoring the snapshot."
+  echo "        [-c comment] is a quote-bounded comment for the snapshot"
   exit
 }
 
 function mount_backup_device () {
-  if [ ! -d $backuppath]; then
+  if [ ! -d $backuppath ]; then
     printx "'$backuppath' was not found; creating it..."
     sudo mkdir $backuppath
   fi
@@ -54,7 +55,7 @@ function verify_available_space () {
     printx "The backupdevice '$backupdevice' has less only $avail space left of the total $size."
     read -p "Do you want to proceed? (y/N) " yn
     if [[ $yn != "y" && $yn != "Y" ]]; then
-      printx "Operation cancelled."
+      echo "Operation cancelled."
       unmount_backup_device
       exit
     fi
@@ -64,11 +65,11 @@ function verify_available_space () {
 function create_snapshot () {
   # Create the snapshot
   if [ -n "$(find $snapshotpath -mindepth 1 -maxdepth 1 -type f -o -type d 2> /dev/null)" ]; then
-    printx "Creating incremental snapshot..."
+    echo "Creating incremental snapshot on '$backupdevice'..."
     # Snapshots exist so create incremental snapshot referencing the latest
     sudo rsync -aAX $dryrun --delete --link-dest=../latest --exclude-from=/etc/ts_excludes / "$snapshotpath/$snapshotname/"
   else
-    printx "Creating full snapshot..."
+    echo "Creating full snapshot on '$backupdevice'..."
     # This is the first snapshot so create full snapshot
     sudo rsync -aAX $dryrun --delete --exclude-from=/etc/ts_excludes / "$snapshotpath/$snapshotname/"
   fi
@@ -84,12 +85,12 @@ function create_snapshot () {
     fi
 
     # Create description in the snapshot directory
-    echo "$(sudo du -sh $snapshotpath/$snapshotname | awk '{print $1}') -- $description" > "$snapshotpath/$snapshotname/$descfile"
+    echo "($(sudo du -sh $snapshotpath/$snapshotname | awk '{print $1}')) $description" > "$snapshotpath/$snapshotname/$descfile"
 
     # Done
-    printx "The snapshot '$snapshotname' was successfully completed."
+    echo "The snapshot '$snapshotname' was successfully completed."
   else
-    printx "Dry run complete"
+    echo "Dry run complete"
   fi
 }
 

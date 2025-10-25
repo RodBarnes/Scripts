@@ -18,8 +18,9 @@ function printx {
 }
 
 function show_syntax () {
-  printx "Syntax: $scriptname <backup_device>"
-  printx "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
+  echo "Delete a snapshot created with ts_backup."
+  echo "Syntax: $scriptname <backup_device>"
+  echo "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   exit  
 }
 
@@ -52,7 +53,7 @@ function select_snapshot () {
     case ${selection} in
       "Cancel")
         # If the user decides to cancel...
-        printx "Operation cancelled."
+            echo "Operation cancelled."
         break
         ;;
       *)
@@ -102,10 +103,10 @@ if [ ! -z $snapshotname ]; then
   printx "This will completely DELETE the snapshot '$snapshotname' and is not recoverable."
   read -p "Are you sure you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
-    printx "Operation cancelled."
+    echo "Operation cancelled."
   else
     sudo rm -Rf $snapshotpath/$snapshotname
-    printx "'$snapshotname' has been deleted."
+    echo "'$snapshotname' has been deleted."
   fi
 fi
 

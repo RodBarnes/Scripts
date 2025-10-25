@@ -39,12 +39,13 @@ function readx {
 }
 
 function show_syntax () {
-  printx "Syntax: $scriptname <backup_device> <restore_device> [-d] [-g <boot_device>] [-s snapshot]"
-  printx "Where:  <backup_device> and <restore_device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
-  printx "        [-d] means to do a 'dry-run' test without actually creating the backup."
-  printx "        [-g] means to rebuild grub on the specified device; e.g., /dev/sda1."
-  printx "        [snapshot] is the name (timestamp) of the snapshot to restore."
-  printx "If no snapshot is specified, the device will be queried for the available snapshots."
+  echo "Restore a snapshot created with ts_backup; emulates TimeShift."
+  echo "Syntax: $scriptname <backup_device> <restore_device> [-d] [-g <boot_device>] [-s snapshot]"
+  echo "Where:  <backup_device> and <restore_device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
+  echo "        [-d] means to do a 'dry-run' test without actually creating the backup."
+  echo "        [-g] means to rebuild grub on the specified device; e.g., /dev/sda1."
+  echo "        [snapshot] is the name (timestamp) of the snapshot to restore."
+  echo "If no snapshot is specified, the device will be queried for the available snapshots."
   exit  
 }
 
@@ -84,7 +85,7 @@ function unmount_restore_device () {
 
 function select_snapshot () {
   # Get the snapshots and allow selecting
-  printx "Listing backup files..."
+  echo "Listing backup files..."
 
   # Get the snapshots
   unset snapshots
@@ -145,7 +146,7 @@ function get_bootfile () {
 function validate_boot_config () {
   # Boot build was not requested so validate restored boot components
   # To see if it should be done anyway...
-  printx "Validating restored boot components..."
+  echo "Validating restored boot components..."
   boot_valid=1
   if [ ! -f "$restorepath/boot/grub/grub.cfg" ]; then
     echo "Warning: $restorepath/boot/grub/grub.cfg not found" > "/tmp/$outbootvalidate"
@@ -195,7 +196,7 @@ function build_boot () {
   sudo mount --bind /sys "$restorepath/sys"
   sudo mount --bind /dev/pts "$restorepath/dev/pts"
 
-  printx "Updating grub on $restoredevice..."
+  echo "Updating grub on $restoredevice..."
   # Use chroot to rebuild grub on the restored partion
   sudo chroot "$restorepath" update-grub &> "/tmp/$outgrubupdate"
   if [ $? -ne 0 ]; then
@@ -203,7 +204,7 @@ function build_boot () {
   fi
   output_file_list+="$outgrubupdate "
 
-  printx "Installing grub on $restoredevice..."
+  echo "Installing grub on $restoredevice..."
   sudo chroot "$restorepath" grub-install --target=x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot &> "/tmp/$outgrubinstall"
   if [ $? -ne 0 ]; then
     printx "Something went wrong with 'grub-install'.  The details are in /tmp/$outgrubinstall."
@@ -213,7 +214,7 @@ function build_boot () {
   # Check for an existing boot entry
   osid=$(grep "^ID=" "$restorepath/etc/os-release" | cut -d'=' -f2 | tr -d '"')
   if ! sudo efibootmgr | grep -q "$osid"; then
-    printx "Building the UEFI boot entry on $bootdevice with an entry for $restoredevice..."
+    echo "Building the UEFI boot entry on $bootdevice with an entry for $restoredevice..."
 
     # Set UEFI boot entry -- where partno is the target partition for the boot entry
     partno=$(lsblk -no PARTN "$restoredevice" 2>/dev/null || echo "2")
@@ -255,7 +256,7 @@ function restore_dryrun () {
   # Do a dry run and record the output
   echo rsync -aAX --dry-run --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" > "/tmp/$outrsync"
   sudo rsync -aAX --dry-run --delete --verbose "--exclude-from=$excludespathname" "$snapshotpath/$snapshotname/" "$restorepath/" >> "/tmp/$outrsync"
-  printx "The dry run restore has completed.  The results are found in '$outrsync'."
+  echo "The dry run restore has completed.  The results are found in '$outrsync'."
 }
 
 function parse_arguments () {
@@ -338,13 +339,13 @@ if [ ! -z $snapshotname ]; then
     printx "This will completely OVERWRITE the operating system on '$restoredevice'."
     readx "Are you sure you want to proceed? (y/N) " yn
     if [[ $yn != "y" && $yn != "Y" ]]; then
-      printx "Operation cancelled."
+      echo "Operation cancelled."
       unmount_backup_device
       unmount_restore_device
       exit
     else
       restore_snapshot
-      printx "The snapshot '$snapshotname' was successfully restored."
+      echo "The snapshot '$snapshotname' was successfully restored."
     fi
 
     get_bootfile
@@ -358,11 +359,11 @@ if [ ! -z $snapshotname ]; then
     fi
 
     # Done
-    printx "The system may now be rebooted into the restored partition."
-    printx "Details of the operation can be viewed in these files found in /tmp: $output_file_list"
+    echo "The system may now be rebooted into the restored partition."
+    echo "Details of the operation can be viewed in these files found in /tmp: $output_file_list"
   fi
 else
-  printx "No snapshot was identified."
+  echo "No snapshot was identified."
 fi
 
 unmount_backup_device
