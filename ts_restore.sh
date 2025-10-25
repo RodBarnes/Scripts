@@ -44,8 +44,8 @@ function show_syntax () {
   echo "Where:  <backup_device> and <restore_device> can be a device designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   echo "        [-d] means to do a 'dry-run' test without actually creating the backup."
   echo "        [-g] means to rebuild grub on the specified device; e.g., /dev/sda1."
-  echo "        [snapshot] is the name (timestamp) of the snapshot to restore."
-  echo "If no snapshot is specified, the device will be queried for the available snapshots."
+  echo "        [snapshot] is the name (timestamp) of the snapshot to restore -- if not present, a selection is presented."
+  echo "NOTE:   Must be run as sudo."
   exit  
 }
 

@@ -27,6 +27,7 @@ function show_syntax () {
   echo "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
   echo "        [-d] means to do a 'dry-run' test without actually restoring the snapshot."
   echo "        [-c comment] is a quote-bounded comment for the snapshot"
+  echo "NOTE:   Must be run as sudo."
   exit
 }
 

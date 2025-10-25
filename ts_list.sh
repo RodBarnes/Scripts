@@ -22,6 +22,7 @@ function show_syntax () {
   echo "List all snapshots created by ts_backup."
   echo "Syntax: $scriptname <backup_device>"
   echo "Where:  <backup_device> can be a backupdevice designator (e.g., /dev/sdb6), a UUID, or a filesystem LABEL."
+  echo "NOTE:   Must be run as sudo."
   exit  
 }
 

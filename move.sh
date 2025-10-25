@@ -15,6 +15,7 @@ function show_syntax () {
   echo "Move designated files to /usr/local/bin, strips the extension, makes them executable and owned by root."
 	echo "Syntax: $(basename $0) <filename>"
   echo "Where   <filename> is a standard filename.  If wildcards are used (*), it must be placed in single quotes."
+  echo "NOTE:   Must be run as sudo."
 	exit
 }
 
