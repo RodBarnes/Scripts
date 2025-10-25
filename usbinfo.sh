@@ -32,6 +32,10 @@ then
   echo 'No speed test will be performed. To include the speed test, run as sudo.'
 fi
 
+# --------------------
+# ------- MAIN -------
+# --------------------
+
 # Get the count of options and increment to include the cancel
 count="${#devices[@]}"
 ((count++))
