@@ -5,43 +5,35 @@
 source /usr/local/lib/colors
 
 scriptname=$(basename $0)
+filepath=/usr/local/bin
 
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
 function show_syntax () {
-	printx "Syntax: $(basename $0) <filepath> <perm> <file> [<file>...]"
-	printx "Where:  <filepath> is the filepath to where the files should be moved."
-  printx "        <perm> are the permissions to be set on the file at the target."
-  printx "        <file> is on or more files to be moved."
-  printx "        If no special permissions are necessary, just set it to '+r'".
+  echo "Move designated files to /usr/local/bin, strips the extension, makes them executable and owned by root."
+	echo "Syntax: $(basename $0) <filename>"
+  echo "Where   <filename> is a standard filename.  If wildcards are used (*), it must be placed in single quotes."
 	exit
 }
 
 function parse_arguments () {
-  # Get the required arguments
-  filepath="${args["0"]}"
-  perm="${args["1"]}"
+  i=0
+  filename="${args[$i]}"
+  ext=${filename##*.}
 
+  # echo "filename=$filename"
+  # echo "ext=$ext"
   # echo "filepath=$filepath"
-  # echo "perm=$perm"
-
-  # Get optional parameters
-  i=2
-  files=()
-  while [ $i -lt $argcnt ]; do
-    files+=("${args[$i]}")
-    ((i++))
-  done
+  # exit
 }
 
 args=("$@")
 argcnt=$#
-if [ $# -lt 2 ]; then
+if [ $argcnt == 0 ]; then
   show_syntax
 fi
-# echo "args=${args[@]}"
 
 parse_arguments
 
@@ -54,10 +46,16 @@ fi
 # ------- MAIN -------
 # --------------------
 
-for file in "${files[@]}"; do
-  printf "Moving '$file' to '$filepath'...\n"
-  sudo mv "$file" "$filepath"
-  sudo chown root:root "$filepath/$file"
-  sudo chmod "$perm" "$filepath/$file"
+for file in $filename
+do
+  newname=${file%.$ext}
+  if ! sudo mv "$file" "$filepath/$newname"; then
+    echo "Failed to move the file"
+  fi
+  if ! sudo chown root:root "$filepath/$newname"; then
+    echo "Failed to change ownership"
+  fi
+  if ! sudo chmod +x "$filepath/$newname"; then
+    echo "Failed to set permissions"
+  fi
 done
-
