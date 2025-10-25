@@ -258,7 +258,7 @@ function restore_dryrun () {
   printx "The dry run restore has completed.  The results are found in '$outrsync'."
 }
 
-function get_arguments () {
+function parse_arguments () {
   # Get the backup_device
   i=0
   if [[ "${args[$i]}" =~ "/dev/" ]]; then
@@ -283,8 +283,7 @@ function get_arguments () {
 
   # Get optional parameters
   i=2
-  check=$#
-  while [ $i -le $check ]; do
+  while [ $i -le $argcnt ]; do
     if [ "${args[$i]}" == "-d" ]; then
       dryrun=--dry-run
     elif [ "${args[$i]}" == "-g" ]; then
@@ -305,11 +304,11 @@ function get_arguments () {
 }
 
 args=("$@")
-if [ $# == 0 ]; then
+argcnt=$#
+if [ $argcnt == 0 ]; then
   show_syntax
 fi
-
-get_arguments
+parse_arguments
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
@@ -322,7 +321,7 @@ if [ ! -e $restoredevice ]; then
 fi
 
 # --------------------
-# ----- MAINLINE -----
+# ------- MAIN -------
 # --------------------
 
 mount_restore_device

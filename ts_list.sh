@@ -59,7 +59,7 @@ function list_snapshots () {
   fi
 }
 
-function get_arguments () {
+function parse_arguments () {
   # Get the backup_device
   i=0
   if [[ "${args[$i]}" =~ "/dev/" ]]; then
@@ -75,9 +75,12 @@ function get_arguments () {
 }
 
 args=("$@")
-if [ $# == 0 ]; then
+argcnt=$#
+if [ $argcnt == 0 ]; then
   show_syntax
 fi
+
+parse_arguments
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
@@ -85,7 +88,7 @@ if [[ "$EUID" != 0 ]]; then
 fi
 
 # --------------------
-# ----- MAINLINE -----
+# ------- MAIN -------
 # --------------------
 
 mount_backup_device

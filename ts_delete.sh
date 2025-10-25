@@ -63,24 +63,28 @@ function select_snapshot () {
   done
 }
 
+function parse_arguments () {
+  # Get the backup_device
+  i=0
+  if [[ "${args[$i]}" =~ "/dev/" ]]; then
+    backupdevice="${args[$i]}"
+  elif [[ "${args[$i]}" =~ $regex ]]; then
+    backupdevice="UUID=${args[$i]}"
+  else
+    # Assume it is a label
+    backupdevice="LABEL=${args[$i]}"
+  fi
+
+  # echo "Device:$backupdevice"
+}
+
 args=("$@")
-if [ $# == 0 ]; then
+argcnt=$#
+if [ $argcnt == 0 ]; then
   show_syntax
 fi
-# echo "args=${args[@]}"
 
-# Get the backup_device
-i=0
-if [[ "${args[$i]}" =~ "/dev/" ]]; then
-  backupdevice="${args[$i]}"
-elif [[ "${args[$i]}" =~ $regex ]]; then
-  backupdevice="UUID=${args[$i]}"
-else
-  # Assume it is a label
-  backupdevice="LABEL=${args[$i]}"
-fi
-
-# echo "Device:$backupdevice"
+parse_arguments
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
@@ -88,7 +92,7 @@ if [[ "$EUID" != 0 ]]; then
 fi
 
 # --------------------
-# ----- MAINLINE -----
+# ------- MAIN -------
 # --------------------
 
 mount_backup_device

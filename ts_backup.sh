@@ -93,7 +93,7 @@ function create_snapshot () {
   fi
 }
 
-function get_arguments() {
+function parse_arguments() {
   # Get the backup_device
   i=0
   if [[ "${args[$i]}" =~ "/dev/" ]]; then
@@ -107,8 +107,7 @@ function get_arguments() {
 
   # Get optional parameters
   i=1
-  check=$#
-  while [ $i -lt $check ]; do
+  while [ $i -lt $argcnt ]; do
     if [ "${args[$i]}" == "-t" ]; then
       dryrun=--dry-run
     elif [ "${args[$i]}" == "-c" ]; then
@@ -124,9 +123,12 @@ function get_arguments() {
 }
 
 args=("$@")
-if [ $# == 0 ]; then
+argcnt=$#
+if [ $argcnt == 0 ]; then
   show_syntax
 fi
+
+parse_arguments
 
 # Confirm running as sudo
 if [[ "$EUID" != 0 ]]; then
@@ -135,7 +137,7 @@ if [[ "$EUID" != 0 ]]; then
 fi
 
 # --------------------
-# ----- MAINLINE -----
+# ------- MAIN -------
 # --------------------
 
 mount_backup_device
