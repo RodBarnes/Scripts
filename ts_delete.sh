@@ -17,6 +17,11 @@ function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
+function readx {
+  printf "${YELLOW}$1${NOCOLOR}"
+  read -p "" $2
+}
+
 function show_syntax () {
   echo "Delete a snapshot created with ts_backup."
   echo "Syntax: $scriptname <backup_device>"
@@ -101,7 +106,7 @@ select_snapshot
 
 if [ ! -z $snapshotname ]; then
   printx "This will completely DELETE the snapshot '$snapshotname' and is not recoverable."
-  read -p "Are you sure you want to proceed? (y/N) " yn
+  readx "Are you sure you want to proceed? (y/N) " yn
   if [[ $yn != "y" && $yn != "Y" ]]; then
     echo "Operation cancelled."
   else
