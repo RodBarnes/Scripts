@@ -54,7 +54,17 @@ function select_snapshot () {
     snapshots+=("$snapshot: $description")
   done < <(find $snapshotpath -mindepth 1 -maxdepth 1 -type d | sort -r | cut -d '/' -f5)
 
+  if [ ${#snapshots[@]} -eq 0 ]; then
+    printx "There are no backups on $backupdevice"
+  else
+    printx "Snapshot files on $backupdevice"
+    # Get the count of options and increment to include the cancel
+    count="${#snapshots[@]}"
+    ((count++))
+
+    COLUMNS=1
   select selection in "${snapshots[@]}" "Cancel"; do
+      if [[ "$REPLY" =~ ^[0-9]+$ && "$REPLY" -ge 1 && "$REPLY" -le $count ]]; then
     case ${selection} in
       "Cancel")
         # If the user decides to cancel...
@@ -66,7 +76,11 @@ function select_snapshot () {
         break
         ;;
     esac
+      else
+        printx "Invalid selection. Please enter a number between 1 and $count."
+      fi
   done
+  fi
 }
 
 function parse_arguments () {
