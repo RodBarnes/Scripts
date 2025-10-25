@@ -20,28 +20,35 @@ function show_syntax () {
 	exit
 }
 
+function parse_arguments () {
+  # Get the required arguments
+  filepath="${args["0"]}"
+  user="${args["1"]}"
+
+  # echo "filepath=$filepath"
+  # echo "user=$user"
+
+  # Get optional parameters
+  i=2
+  systems=()
+  while [ $i -lt $argcnt ]; do
+    systems+=("${args[$i]}")
+    ((i++))
+  done
+}
+
 args=("$@")
+argcnt=$#
 if [ $# -lt 2 ]; then
   show_syntax
 fi
 # echo "args=${args[@]}"
 
-# Get the required arguments
-filepath="${args["0"]}"
-user="${args["1"]}"
+parse_arguments
 
-# echo "filepath=$filepath"
-# echo "user=$user"
-
-# Get optional parameters
-i=2
-check=$#
-echo "check=$check"
-systems=()
-while [ $i -lt $check ]; do
-  systems+=("${args[$i]}")
-  ((i++))
-done
+# --------------------
+# ------- MAIN -------
+# --------------------
 
 for system in "${systems[@]}"; do
   printf "Copying to '$system'..."

@@ -19,32 +19,40 @@ function show_syntax () {
 	exit
 }
 
+function parse_arguments () {
+  # Get the required arguments
+  filepath="${args["0"]}"
+  perm="${args["1"]}"
+
+  # echo "filepath=$filepath"
+  # echo "perm=$perm"
+
+  # Get optional parameters
+  i=2
+  files=()
+  while [ $i -lt $argcnt ]; do
+    files+=("${args[$i]}")
+    ((i++))
+  done
+}
+
 args=("$@")
+argcnt=$#
 if [ $# -lt 2 ]; then
   show_syntax
 fi
 # echo "args=${args[@]}"
 
-# Get the required arguments
-filepath="${args["0"]}"
-perm="${args["1"]}"
-
-# echo "filepath=$filepath"
-# echo "perm=$perm"
-
-# Get optional parameters
-i=2
-check=$#
-files=()
-while [ $i -lt $check ]; do
-  files+=("${args[$i]}")
-  ((i++))
-done
+parse_arguments
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
   exit
 fi
+
+# --------------------
+# ------- MAIN -------
+# --------------------
 
 for file in "${files[@]}"; do
   printf "Moving '$file' to '$filepath'...\n"
