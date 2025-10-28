@@ -24,9 +24,8 @@ function show_syntax () {
 }
 
 function showInfo () {
-  printx "/dev/$1"
-
   output=$(sudo smartctl -a /dev/$1)
+  printx "/dev/$1"
   echo "$output" | grep "Device Model"
   echo "$output" | grep "Model Number"
   echo "$output" | grep "Serial Number"
