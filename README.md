@@ -29,7 +29,7 @@ Usage: `sudo initramfs_nvidia_fix <kerneL>`
 
 Sometimes, when a new kernel is received, the nvidia-related DKMS modules are missing or left compressed and the build of `initramfs` fails to include them.  The visual manifestation of this is that logos and graphics displayed by Plymouth during the boot of the OS are based upon the default resolution and will appear distorted or fuzzy or, if they are missing, the login screen comes up a default resolution.
 
-This convenience script uncompresses those files and updates initramfs to correct this.
+This tool uncompresses those files and updates initramfs to correct this.
 
 ## install_appimage.sh
 Usage: `install_appimage <name> <path_to_appimage>`
