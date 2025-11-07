@@ -2,6 +2,8 @@
 
 # Common functions and code used by multiple scripts
 
+set -eo pipefail
+
 source /usr/local/lib/colors
 
 printx() {
