@@ -9,6 +9,9 @@ Uses `smartctl` to display information about the non-removable drives found on t
 ## colors.sh
 A library for inclusion by other scripts that sets up some colors for text.  It must be accessible via `$PATH` for the scripts to find it.  The recommended location is `/usr/local/lib`
 
+## common.sh
+A library for includsion by other scripts for common functions and other commands.  Includes source of colors.sh
+
 ## cpumode.sh
 Usage: `sudo cpumode [powersave|performance|current]`
 
