@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin bash
 
 # This is a convenience script to address an issue that periodically happens when a
 # new kernel is received.  Sometimes, the nvidia-related module files aren't uncompressed
@@ -7,6 +7,7 @@
 # Obviously, this script is unnecessary on a non-Nvidia system.
 
 source /usr/local/lib/colors
+
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
@@ -16,8 +17,9 @@ scriptname=$(basename $0)
 if [[ $# == 1 ]]; then
   arg=$1
   if [ $arg == "?" ] || [ $arg == "-h" ]; then
-    printx "Syntax: $scriptname <kernel>\nWhere:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
-    printx "If no kernel is specified it will rebuild the current initramfs.\n"
+    echo "Syntax: $scriptname <kernel>"
+    echo "Where:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
+    echo "If no kernel is specified it will rebuild the current initramfs.\n"
     exit
   else
     kernel=$arg
