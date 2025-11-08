@@ -27,16 +27,16 @@ printx() {
 
 # Read using color
 readx() {
-  printx $*
-  read -p "" $2
+  printf "${YELLOW}$1${NOCOLOR}" >&2
+  read $2
 }
 
 # Echo within a function to prevent it being part of the output
 show() {
-  echo $* >&2
+  echo "$*" >&2
 }
 
 # Printx within a function to prevent it being part of the output
 showx() {
-  printx $* >&2
+  printx "$*" >&2
 }
