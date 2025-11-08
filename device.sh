@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Functions for managing devices
+# Library for managing devices
 
 mount_device_at_path() {
   local device=$1 mount=$2 dir=$3
