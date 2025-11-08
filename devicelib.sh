@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-# Common functions and code used by multiple scripts
-
-set -eo pipefail
+# Functions for managing devices
 
 mount_device_at_path() {
   local device=$1 mount=$2 dir=$3
