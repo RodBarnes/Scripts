@@ -4,7 +4,7 @@
 # This has been tested on LinxuMint and works well.
 # It should work under Fedora and downstream debian-based with little or no changes.
 
-source /usr/local/lib/colors
+source /usr/local/lib/color
 
 show_syntax() {
   echo "Syntax: $(basename $0) <command>"

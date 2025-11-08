@@ -4,7 +4,7 @@
 # This has been tested on Fedora 39 Cinnamon and works well.
 # It should work under Ubuntu and downstream with little or no changes.
 
-source /usr/local/lib/colors
+source /usr/local/lib/color
 
 show_syntax() {
   echo "Syntax: $(basename $0) <command> <appimage>"

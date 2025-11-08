@@ -3,7 +3,7 @@
 # Given an identifying string for which to search the output of lsusb,
 # return the full name of the device and the USB version
 
-source /usr/local/lib/colors
+source /usr/local/lib/color
 
 show_syntax() {
   echo "Syntax: $(basename $0)"
