@@ -4,16 +4,22 @@
 # for where the archive will be located.  Especially if using LocalSend.
 
 source /usr/local/lib/colors
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
+
+show_syntax() {
+  echo "Syntax: $(basename $0) <filename>"
+  echo "Where:  <filename> is the name of the archive containing the session buddy content"
+  echo "NOTE: It is assumed the archive is located in ~/Downloads"
+  exit  
 }
 
-scriptname=$(basename $0)
-if [[ $# < 1 ]]; then
-  printx "Syntax: $scriptname 'filename'\nWhere:  filename is the name of the archive containing the session buddy content"
-  printx "NOTE: It is assumed the archive is located in ~/Downloads\n"
-  exit
+# --------------------
+# ------- MAIN -------
+# --------------------
+
+if [ $# -lt 1 ]; then
+  show_syntax
 fi
+
 
 # Obtain the name of the archive
 filename=$1

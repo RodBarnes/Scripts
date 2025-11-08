@@ -4,15 +4,19 @@
 # If not, start it; if it is, shutdown
 
 source /usr/local/lib/colors
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
+
+show_syntax() {
+  echo "Syntax: $(basename $0) <vm_name>"
+  echo "Where:  <vm_name> is the name of the VM to be started or shutdown"
+  exit
 }
 
-scriptname=$(basename $0)
+# --------------------
+# ------- MAIN -------
+# --------------------
 
 if [[ $# < 1 ]]; then
-  printx "Syntax: $scriptname 'vm_name'\nWhere:  vm_name is the name of the VM to be started or shutdown\n"
-  exit
+  show_syntax
 fi
 
 vmname=$1

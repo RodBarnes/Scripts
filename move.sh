@@ -4,14 +4,9 @@
 
 source /usr/local/lib/colors
 
-scriptname=$(basename $0)
 filepath=/usr/local/bin
 
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
-}
-
-function show_syntax () {
+show_syntax() {
   echo "Move designated files to /usr/local/bin, strips the extension, makes them executable and owned by root."
 	echo "Syntax: $(basename $0) <filename>"
   echo "Where   <filename> is a standard filename.  If wildcards are used (*), it must be placed in single quotes."
@@ -19,7 +14,7 @@ function show_syntax () {
 	exit
 }
 
-function parse_arguments () {
+parse_arguments() {
   i=0
   filename="${args[$i]}"
   ext=${filename##*.}
@@ -29,6 +24,10 @@ function parse_arguments () {
   # echo "filepath=$filepath"
   # exit
 }
+
+# --------------------
+# ------- MAIN -------
+# --------------------
 
 args=("$@")
 argcnt=$#
@@ -42,10 +41,6 @@ if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
   exit
 fi
-
-# --------------------
-# ------- MAIN -------
-# --------------------
 
 for file in $filename
 do

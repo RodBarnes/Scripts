@@ -5,11 +5,14 @@
 
 source /usr/local/lib/colors
 
-scriptname=$(basename $0)
-
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
+show_syntax() {
+  echo "Syntax: $(basename $0)"
+  exit
 }
+
+# --------------------
+# ------- MAIN -------
+# --------------------
 
 unset devices
 while IFS= read -r line; do
@@ -31,10 +34,6 @@ if [[ "$EUID" -ne 0 ]]
 then
   echo 'No speed test will be performed. To include the speed test, run as sudo.'
 fi
-
-# --------------------
-# ------- MAIN -------
-# --------------------
 
 # Get the count of options and increment to include the cancel
 count="${#devices[@]}"

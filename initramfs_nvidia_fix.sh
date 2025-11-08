@@ -8,19 +8,21 @@
 
 source /usr/local/lib/colors
 
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
+show_syntax() {
+  echo "Syntax: $(basename $0) <kernel>"
+  echo "Where:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
+  echo "If no kernel is specified it will rebuild the current initramfs.\n"
+  exit
 }
 
-scriptname=$(basename $0)
+# --------------------
+# ------- MAIN -------
+# --------------------
 
 if [[ $# == 1 ]]; then
   arg=$1
   if [ $arg == "?" ] || [ $arg == "-h" ]; then
-    echo "Syntax: $scriptname <kernel>"
-    echo "Where:  <kernel> is the name of the initramfs to be fixed; e.g., 6.11.0-28-generic"
-    echo "If no kernel is specified it will rebuild the current initramfs.\n"
-    exit
+    show_syntax
   else
     kernel=$arg
   fi

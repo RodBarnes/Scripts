@@ -3,9 +3,17 @@
 # Provided the name of the device file-system; e.g., Storage
 # return the device id; e.g., sdxn
 
+show_syntax() {
+	echo "Syntax: $(basename $0) <device_name>"
+	exit
+}
+
+# --------------------
+# ------- MAIN -------
+# --------------------
+
 if [ -z $1 ]; then
-	echo "Syntax: $0 <device_name>"
-	exit 1
+  show_syntax
 fi
 
 devname=$1

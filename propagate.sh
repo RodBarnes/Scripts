@@ -6,21 +6,16 @@
 
 source /usr/local/lib/colors
 
-scriptname=$(basename $0)
-
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
-}
-
-function show_syntax () {
-	printx "Syntax: $(basename $0) <filepath> <user> <system> [<system>...]"
-	printx "Where:  <filepath> is the filepath to the file to be propagated."
-  printx "        <user> is the user that should be used for login."
-  printx "        <system> is one or more systems to which the file should be copied."
+show_syntax() {
+  echo "Propagate file[s] to another system."
+	echo "Syntax: $(basename $0) <filepath> <user> <system> [<system>...]"
+	echo "Where:  <filepath> is the filepath to the file to be propagated."
+  echo "        <user> is the user that should be used for login."
+  echo "        <system> is one or more systems to which the file should be copied."
 	exit
 }
 
-function parse_arguments () {
+parse_arguments() {
   # Get the required arguments
   filepath="${args["0"]}"
   user="${args["1"]}"
@@ -37,6 +32,10 @@ function parse_arguments () {
   done
 }
 
+# --------------------
+# ------- MAIN -------
+# --------------------
+
 args=("$@")
 argcnt=$#
 if [ $# -lt 2 ]; then
@@ -45,10 +44,6 @@ fi
 # echo "args=${args[@]}"
 
 parse_arguments
-
-# --------------------
-# ------- MAIN -------
-# --------------------
 
 for system in "${systems[@]}"; do
   printf "Copying to '$system'..."

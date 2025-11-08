@@ -4,26 +4,14 @@
 
 source /usr/local/lib/colors
 
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
-}
-
-scriptname=$(basename $0)
-
-# Check for smartctl
-if [ -z $(command -v smartctl) ]; then
-  printx "This utility requires the 'smartctl' command.  It isn't present either because"
-  printx " it isn't needed (i.e., there are no smart devices) or it has not been installed.\n"
+show_syntax() {
+  echo "Syntax: $(basename $0) [drive]"
+  echo "Where [drive] is an optional drive designator; e.g., /dev/sda, sda, etc."
+  echo "If no drive is specified, then all drives are iterated."
   exit
-fi
-
-function show_syntax () {
-  printx "Syntax: $scriptname [drive]"
-  printx "Where [drive] is an optional drive designator; e.g., /dev/sda, sda, etc."
-  printx "If no drive is specified, then all drives are iterated.\n"
 }
 
-function showInfo () {
+showInfo() {
   output=$(sudo smartctl -a /dev/$1)
   printx "/dev/$1"
   echo "$output" | grep "Device Model"
@@ -38,6 +26,17 @@ function showInfo () {
 
   printf "\n"
 }
+
+# --------------------
+# ------- MAIN -------
+# --------------------
+
+# Check for smartctl
+if [ -z $(command -v smartctl) ]; then
+  printx "This utility requires the 'smartctl' command.  It isn't present either because"
+  printx " it isn't needed (i.e., there are no smart devices) or it has not been installed.\n"
+  exit
+fi
 
 if [[ $# == 1 ]]; then
   arg=$1

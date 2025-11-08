@@ -5,21 +5,26 @@
 # It should work under Ubuntu and downstream with little or no changes.
 
 source /usr/local/lib/colors
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
-}
 
-if [[ "$EUID" = 0 ]]; then
-  printx "This must be run as the standard user that will use the device.\nIt will prompt for sudo when it is needed.\n"
-  exit
-fi
-
-scriptname=$(basename $0)
-if [[ $# < 2 ]]; then
-  echo "Syntax: $scriptname <command> <appimage>"
+show_syntax() {
+  echo "Syntax: $(basename $0) <command> <appimage>"
   echo "Where:  <command> is the name to be used to invoke the program"
   echo "        <appimage> is the filename (without extension) of the AppImage"
   echo "NOTE:   Must be run as sudo."
+  exit
+}
+
+# --------------------
+# ------- MAIN -------
+# --------------------
+
+scriptname=$(basename $0)
+if [[ $# < 2 ]]; then
+  show_syntax
+fi
+
+if [[ "$EUID" = 0 ]]; then
+  printx "This must be run as the standard user that will use the device.\nIt will prompt for sudo when it is needed.\n"
   exit
 fi
 

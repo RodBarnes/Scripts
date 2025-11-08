@@ -2,16 +2,20 @@
 #v1.0
 
 source /usr/local/lib/colors
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
+
+show_syntax() {
+	echo "Syntax: $(basename $0) <program_name> [<user>]"
+	exit
 }
 
-# Show how long a process has been running
-scriptname=$(basename $0)
+# --------------------
+# ------- MAIN -------
+# --------------------
 
-if [ -z $1 ]; then
-	printx "Syntax: $scriptname <program_name> [<user>]"
-	exit 1
+# Show how long a process has been running
+
+if [[ $# < $1 ]]; then
+  show_syntax
 fi
 
 # Get the arguments

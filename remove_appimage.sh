@@ -4,24 +4,26 @@
 # This has been tested on LinxuMint and works well.
 # It should work under Fedora and downstream debian-based with little or no changes.
 
-scriptname=$(basename $0)
-
 source /usr/local/lib/colors
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
+
+show_syntax() {
+  echo "Syntax: $(basename $0) <command>"
+  echo "Where:  <command> is the name to be used to invoke the program\n"
+  exit
 }
 
+# --------------------
+# ------- MAIN -------
+# --------------------
+
 if [[ "$EUID" = 0 ]]; then
-  printx "This must be run as the standard user that will use the device.\nIt will prompt for sudo when it is needed.\n"
+  printx "This must be run as the standard user that will use the device.\n"
+  printx "It will prompt for sudo when it is needed.\n"
   exit
 fi
 
-
-# This is a test comment to demonstrate an addition.
-
-if [[ $# < 1 ]]; then
-  printx "Syntax: $scriptname 'command'\nWhere:  command is the name to be used to invoke the program\n"
-  exit
+if [ $# -lt 1 ]; then
+  show_syntax
 fi
 
 command=$1
