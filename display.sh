@@ -20,11 +20,23 @@ LTCYAN='\033[1;36m' # Light Cyan
 LTGRAY='\033[0;37m' # Light Gray
 WHITE='\033[1;37m' # White
 
+# Display text using color
 printx() {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }
 
+# Read using color
 readx() {
-  printf "${YELLOW}$1${NOCOLOR}"
+  printx $*
   read -p "" $2
+}
+
+# Echo within a function to prevent it being part of the output
+show() {
+  echo $* >&2
+}
+
+# Printx within a function to prevent it being part of the output
+showx() {
+  printx $* >&2
 }

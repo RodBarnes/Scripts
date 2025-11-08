@@ -6,7 +6,7 @@
 # haven't even been present and a reinstall is required.
 # Obviously, this script is unnecessary on a non-Nvidia system.
 
-source /usr/local/lib/color
+source /usr/local/lib/display
 
 show_syntax() {
   echo "Syntax: $(basename $0) <kernel>"

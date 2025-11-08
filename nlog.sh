@@ -3,7 +3,7 @@
 # Usage
 # nlog <dir>
 
-source /usr/local/lib/color
+source /usr/local/lib/display
 
 show_syntax() {
   echo "Syntax: $(basename $0) <directory>"

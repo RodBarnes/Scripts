@@ -2,7 +2,7 @@
 
 # Show info for all non-removable block devices; aka drives
 
-source /usr/local/lib/color
+source /usr/local/lib/display
 
 show_syntax() {
   echo "Syntax: $(basename $0) [drive]"

@@ -7,7 +7,7 @@
 
 STMT=$(basename $0)
 
-source /usr/local/lib/color
+source /usr/local/lib/display
 function printx {
   printf "${YELLOW}$1${NOCOLOR}\n"
 }

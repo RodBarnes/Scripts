@@ -2,7 +2,7 @@
 
 # Move the list of files to an executable path
 
-source /usr/local/lib/color
+source /usr/local/lib/display
 
 filepath=/usr/local/bin
 
