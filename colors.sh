@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# v1.0
 
-# Common module specifying names for terminal color codes
-# for reference in other scripts.
+# Names for terminal color codes for use with printx & readx
 
 NOCOLOR='\033[0m' # No Color
 GREEN='\033[0;32m' # Green
@@ -21,3 +19,12 @@ CYAN='\033[0;36m' # Cyan
 LTCYAN='\033[1;36m' # Light Cyan
 LTGRAY='\033[0;37m' # Light Gray
 WHITE='\033[1;37m' # White
+
+printx() {
+  printf "${YELLOW}$1${NOCOLOR}\n"
+}
+
+readx() {
+  printf "${YELLOW}$1${NOCOLOR}"
+  read -p "" $2
+}

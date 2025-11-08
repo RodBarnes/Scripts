@@ -4,17 +4,6 @@
 
 set -eo pipefail
 
-source /usr/local/lib/colors
-
-printx() {
-  printf "${YELLOW}$1${NOCOLOR}\n"
-}
-
-readx() {
-  printf "${YELLOW}$1${NOCOLOR}"
-  read -p "" $2
-}
-
 mount_device_at_path() {
   local device=$1 mount=$2 dir=$3
   
