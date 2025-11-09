@@ -4,9 +4,9 @@
 # return the device id; e.g., sdxn
 
 show_syntax() {
-	echo "Syntax: $(basename $0) <label>"
-	echo "Where:  <label> is the filesystem label"
-	exit
+  echo "Syntax: $(basename $0) <label>"
+  echo "Where:  <label> is the filesystem label"
+  exit
 }
 
 # --------------------

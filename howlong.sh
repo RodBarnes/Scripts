@@ -4,8 +4,8 @@
 source /usr/local/lib/display
 
 show_syntax() {
-	echo "Syntax: $(basename $0) <program_name> [<user>]"
-	exit
+  echo "Syntax: $(basename $0) <program_name> [<user>]"
+  exit
 }
 
 # --------------------
@@ -22,7 +22,7 @@ fi
 # 1st argument is the program for which to search
 # 2nd argument is the user -- defaults to current user
 # See if used bash to execute
-if [ $1 == "bash" ]; then
+if [[ $1 == "bash" ]]; then
 	progname=$2
 	cuser=$3
 else
@@ -39,7 +39,7 @@ srchname="[${progname:0:1}]${progname:1:100}"
 # Get the process entry
 PS_ENTRY=$(ps -u $cuser -o etime,cmd | grep "${srchname}")
 etime=$(echo $PS_ENTRY | cut -d' ' -f 1)
-if [ $etime == "00:00" ]; then
+if [[ $etime == "00:00" ]]; then
 	echo "Process '$progname' not found"
 	exit 1
 fi
