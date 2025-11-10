@@ -1,4 +1,4 @@
-#!/usr/bin bash
+#!/usr/bin/env bash
 
 # This is a convenience script to address an issue that periodically happens when a
 # new kernel is received.  Sometimes, the nvidia-related module files aren't uncompressed
