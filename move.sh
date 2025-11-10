@@ -82,15 +82,11 @@ do
   if ! sudo mv "$file" "$directory/$newname"; then
     printx "Failed to move '$newname' to '$directory'"
     exit
-  # else
-  #   echo "moved to '$directory"
   fi
 
   if [[ ! -z $user ]]; then
     if ! sudo chown $user:$user "$directory/$newname"; then
       printx "Failed to change ownership"
-    # else
-    #   echo "ownership set to '$user'"
     fi
   fi
 
