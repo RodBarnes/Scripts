@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Move the list of files to an executable path
+# Move the list of files to a path allowing for changer of ownership and permissions
 
 source /usr/local/lib/display
 
