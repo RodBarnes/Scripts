@@ -18,6 +18,13 @@ source /usr/local/lib/display
 
 set -e
 
+show_syntax() {
+  echo "Syntax: $(basename $0) <module_name> <module_version>"
+  echo "Where:  <module_name> is the name of the directory located under /var/lib/dkms."
+  echo "        <module_version> is the version the module that should be built."
+  exit
+}
+
 clean_module() {
   local mod=$1 base=$2
 
@@ -74,22 +81,31 @@ build_module() {
     update-initramfs -u -k "$kernel"
   else
     show "DKMS build failed for $mod/$module_version on $kernel. Check $logfile" | tee -a $logfile
-    exit 1
+    exit 3
   fi
 }
 
-kernel=$(uname -r)
-
-name="nvidia"
-version="580.95.05"
-if [ -d /var/lib/dkms/$name ]; then
-  clean_module $name $version
-  build_module $name $version $kernel
+if [ $# -lt 2 ]; then
+  show_syntax
 fi
 
-name="virtualbox"
-version="7.0.16"
-if [ -d /var/lib/dkms/$name ]; then
+name=$1
+version=$2
+kernel=$(uname -r)
+
+# name="nvidia"
+# version="580.95.05"
+
+# name="virtualbox"
+# version="7.0.16"
+
+if [ ! -d /var/lib/dkms/$name ]; then
+  echo "Unable to locate the module '$name' at /var/lib/dkms/$name."
+  exit 1
+elif [ ! d /var/lib/dkms/$name/$version ]; then
+  echo "Unable to locate the module version '$version' at /var/lib/dkms/$name/$version."
+  exit 1
+else
   clean_module $name $version
   build_module $name $version $kernel
 fi
