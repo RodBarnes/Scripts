@@ -95,12 +95,6 @@ name=$1
 version=$2
 kernel=$(uname -r)
 
-# name="nvidia"
-# version="580.95.05"
-
-# name="virtualbox"
-# version="7.0.16"
-
 if [ ! -d /var/lib/dkms/$name ]; then
   echo "Unable to locate the module '$name' at /var/lib/dkms/$name."
   exit 1
