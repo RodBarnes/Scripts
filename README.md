@@ -1,5 +1,5 @@
 # tools
-A collection of `bash` scripts for working with Linux systems.  Each is intended to be instantiated within the `$PATH`, set as executable, and without the `.sh` extension.  The recommended location is `/usr/local/bin`.  Many (all?) of these rely upon library scripts expected to be in `/usr/local/lib`.
+A collection of `bash` scripts for working with Linux systems.  They have been written for and tested on Linux Mint but should work on most Debian-based distros (and probably most others).  Each is intended to be instantiated within the `$PATH`, set as executable, and without the `.sh` extension.  The recommended location is `/usr/local/bin`.  Many (all?) of these rely upon library scripts expected to be in `/usr/local/lib`.
 
 ## blkdevinfo.sh
 Usage: `blkdevinfo [drive]`
