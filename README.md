@@ -1,16 +1,16 @@
 # Scripts
-A collection of `bash` scripts for working with Linux systems.  Each is intended to be instantiated within the `$PATH`, set as executable, and without the `.sh` extension.  The recommended location is `/usr/local/bin`.
+A collection of `bash` scripts for working with Linux systems.  Each is intended to be instantiated within the `$PATH`, set as executable, and without the `.sh` extension.  The recommended location is `/usr/local/bin`.  Many (all?) of these rely upon library scripts expected to be in `/usr/local/lib`.
 
 ## blkdevinfo.sh
 Usage: `blkdevinfo [drive]`
 
 Uses `smartctl` to display information about the non-removable drives found on the system.  If no drive is specified, it iterates all the drives.
 
-## colors.sh
-A library for inclusion by other scripts that sets up some colors for text.  It must be accessible via `$PATH` for the scripts to find it.  The recommended location is `/usr/local/lib`
+## display.sh
+A library that sets up some colors and functions for text.  It is expected to be placed in `/usr/local/lib`.
 
-## common.sh
-A library for includsion by other scripts for common functions and other commands.  Includes source of colors.sh
+## device.sh
+A library that includes functions for managing devices.  It is expected to be placed in `/usr/local/lib`.
 
 ## cpumode.sh
 Usage: `sudo cpumode [powersave|performance|current]`
@@ -23,7 +23,7 @@ Usage: `devid <device_label>`
 Displays the corresponding device id (e.g., sda1) that matches the specified label as reported by `blikid`.
 
 ## dkms-rebuild.sh
-NOTE: This is work-in-progress as of 2025-11-11.
+NOTE: This is work-in- progress as of 2025-11-11.
 
 Usage: `dkms-rebuild`
 
