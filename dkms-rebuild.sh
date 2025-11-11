@@ -22,6 +22,8 @@ show_syntax() {
   echo "Syntax: $(basename $0) <module_name> <module_version>"
   echo "Where:  <module_name> is the name of the directory located under /var/lib/dkms."
   echo "        <module_version> is the version the module that should be built."
+  echo "Sample: '$(basename $0) "nvidia" "580.95.05"'"
+  echo "Sample: '$(basename $0) "virtualbox" "7.0.16"'"
   exit
 }
 
