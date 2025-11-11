@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # This script was built from a conversation with Grok (https://grok.com/c/3d149a35-ac28-4ba2-aa5c-855ab9bf2dde)
 # on the issue around DKMS files not being included as part of the kernel build.  I experienced this with
