@@ -80,16 +80,16 @@ build_module() {
 
 kernel=$(uname -r)
 
-mod_name="nvidia"
-mod_version="580.95.05"
-if [ -d /var/lib/dkms/$mod ]; then
-  clean_module $mod $mod_version
-  build_module $mod $mod_version $kernel
+name="nvidia"
+version="580.95.05"
+if [ -d /var/lib/dkms/$name ]; then
+  clean_module $name $version
+  build_module $name $version $kernel
 fi
 
-mod_base="virtualbox"
-mod_version="7.0.16"
-if [ -d /var/lib/dkms/$mod ]; then
-  clean_module $mod $mod_version
-  build_module $mod $mod_version $kernel
+name="virtualbox"
+version="7.0.16"
+if [ -d /var/lib/dkms/$name ]; then
+  clean_module $name $version
+  build_module $name $version $kernel
 fi
