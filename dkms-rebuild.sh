@@ -97,6 +97,11 @@ name=$1
 version=$2
 kernel=$(uname -r)
 
+if [[ "$EUID" != 0 ]]; then
+  printx "This must be run as sudo.\n"
+  exit
+fi
+
 if [ ! -d "/var/lib/dkms/$name" ]; then
   echo "Unable to locate the module '$name' at /var/lib/dkms/$name."
   exit 1
