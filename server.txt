@@ -1,7 +1,7 @@
-blkdevinfo.sh
-device.sh
-display.sh
-howlong.sh
-move.sh
-ship.sh
-usbinfo.sh
+blkdevinfo
+device
+display
+howlong
+move
+ship
+usbinfo
