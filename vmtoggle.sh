@@ -3,7 +3,7 @@
 # Given the name of a VM, check if it running.
 # If not, start it; if it is, shutdown
 
-source /usr/local/lib/display
+source /usr/local/lib/display.sh
 
 show_syntax() {
   echo "Syntax: $(basename $0) <vm_name>"

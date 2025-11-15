@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-source /usr/local/lib/display
-source /usr/local/lib/device
+source /usr/local/lib/display.sh
+source /usr/local/lib/device.sh
 
 show_syntax() {
   echo "Move designated files from a directory to the same directory on another drive."

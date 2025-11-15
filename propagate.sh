@@ -4,7 +4,7 @@
 # They will end up in the /home/<user> directory of the target system(s)
 # and will still require ssh into each system and movebin to place themn
 
-source /usr/local/lib/display
+source /usr/local/lib/display.sh
 
 show_syntax() {
   echo "Propagate file[s] to another system."

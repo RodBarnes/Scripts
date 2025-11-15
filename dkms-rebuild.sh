@@ -14,7 +14,7 @@
 # Going forward that would have to be changed as these are built if a new version comes along and is to replace
 # this pegged "base" version.
 
-source /usr/local/lib/display
+source /usr/local/lib/display.sh
 
 set -e
 

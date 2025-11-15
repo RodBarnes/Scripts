@@ -3,7 +3,7 @@
 # This script assumed it is run from ~/Downloads since that is the logical
 # for where the archive will be located.  Especially if using LocalSend.
 
-source /usr/local/lib/display
+source /usr/local/lib/display.sh
 
 show_syntax() {
   echo "Syntax: $(basename $0) <filename>"

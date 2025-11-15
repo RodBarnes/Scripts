@@ -2,7 +2,7 @@
 
 # Move the list of files to a path allowing for changer of ownership and permissions
 
-source /usr/local/lib/display
+source /usr/local/lib/display.sh
 
 show_syntax() {
   echo "Move designated files to a directory."
