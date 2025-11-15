@@ -2,10 +2,8 @@ blkdevinfo
 howlong
 install_appimage
 launch_gateway
-move
 nlog
 remove_appimage
 session_buddy_unzip
 session_buddy_zip
-ship
 usbinfo

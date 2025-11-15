@@ -1,7 +1,3 @@
 blkdevinfo
-device
-display
 howlong
-move
-ship
 usbinfo
