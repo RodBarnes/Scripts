@@ -7,10 +7,7 @@
 
 STMT=$(basename $0)
 
-source /usr/local/lib/display
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
-}
+source /usr/local/lib/display.sh
 
 if [ $# -eq	 0 ]; then
 	WAKETIME='03:29'

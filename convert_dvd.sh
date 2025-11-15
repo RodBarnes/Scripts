@@ -3,10 +3,7 @@
 
 # Intended to take a MVK ripped from a DVD and convert it to decent-video H.265
 
-source /usr/local/lib/display
-function printx {
-  printf "${YELLOW}$1${NOCOLOR}\n"
-}
+source /usr/local/lib/display.sh
 
 STMT=$(basename $0)
 
