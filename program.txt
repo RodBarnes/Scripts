@@ -1,6 +1,4 @@
 blkdevinfo
-device
-display
 howlong
 install_appimage
 launch_gateway
