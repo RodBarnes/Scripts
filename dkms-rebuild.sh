@@ -19,16 +19,20 @@ source /usr/local/lib/display.sh
 set -e
 
 show_syntax() {
-  echo "Syntax: $(basename "$0") <module_name> <module_version>"
+  echo "Syntax: $(basename "$0") <module_name> [kernel]"
   echo "Where:  <module_name> is the name of the directory located under /var/lib/dkms."
-  echo "        <module_version> is the version the module that should be built."
-  echo "Sample: $(basename "$0") nvidia 580.95.05"
-  echo "Sample: $(basename "$0") virtualbox 7.0.16"
+  echo "        [kernel] is the kernel to build; defaults to the active kernel."
+  echo "Sample: $(basename "$0") nvidia"
+  echo "Sample: $(basename "$0") virtualbox 6.8.0-88-geneeric"
   exit
 }
 
 clean_module() {
-  local mod=$1 base=$2
+  local mod=$1 kernel=$2
+  local base=$(readlink "/var/lib/dkms/$mod/kernel-$kernel-x86_64" | cut -d'/' -f1)
+
+  # show "mod=$mod, kernel=$kernel, base=$base"
+  # read
 
   # Clean up stale versions
   for stale_version in $(ls /var/lib/dkms/"$mod" | grep -v source); do
@@ -39,7 +43,11 @@ clean_module() {
 }
 
 build_module() {
-  local mod=$1 base=$2 kernel=$3
+  local mod=$1 kernel=$2
+  local base=$(readlink "/var/lib/dkms/$mod/kernel-$kernel-x86_64" | cut -d'/' -f1)
+
+  # show "mod=$mod, kernel=$kernel, base=$base"
+  # read
 
   local logfile="/tmp/dkms-$mod-$kernel.log"
 
@@ -89,13 +97,19 @@ build_module() {
   fi
 }
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 1 ]; then
   show_syntax
 fi
 
 name=$1
-version=$2
-kernel=$(uname -r)
+kernel=$2
+
+if [ -z $kernel ]; then
+  kernel=$(uname -r)
+fi
+
+echo "name=$name"
+echo "kernel=$kernel"
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
@@ -105,12 +119,10 @@ fi
 if [ ! -d "/var/lib/dkms/$name" ]; then
   echo "Unable to locate the module '$name' at /var/lib/dkms/$name."
   exit 1
-elif [ ! -d "/var/lib/dkms/$name/$version" ]; then
-  echo "Unable to locate the module version '$version' at /var/lib/dkms/$name/$version."
-  exit 1
 else
   echo "Cleaning module '$name'..."
-  clean_module "$name" "$version"
+  clean_module "$name" "$kernel"
+
   echo "Building module '$name' version '$version'..."
-  build_module "$name" "$version" "$kernel"
+  build_module "$name" "$kernel"
 fi
