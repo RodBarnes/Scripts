@@ -88,4 +88,4 @@ fi
 # Uncompress the module and create the initramfs
 sudo unzstd /usr/lib/modules/$kernel/updates/dkms/nvidia*.ko.zst
 sudo update-initramfs -u -k $kernel
-#sudo rm /usr/lib/modules/$kernel/updates/dkms/nvidia*.zst
+sudo rm /usr/lib/modules/$kernel/updates/dkms/nvidia*.zst
