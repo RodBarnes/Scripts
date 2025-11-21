@@ -19,11 +19,9 @@ source /usr/local/lib/display.sh
 set -e
 
 show_syntax() {
-  echo "Syntax: $(basename "$0") <module_name> [kernel]"
-  echo "Where:  <module_name> is the name of the directory located under /var/lib/dkms."
-  echo "        [kernel] is the kernel to build; defaults to the active kernel."
-  echo "Sample: $(basename "$0") nvidia"
-  echo "Sample: $(basename "$0") virtualbox 6.8.0-88-geneeric"
+  echo "Syntax: $(basename "$0") [-k|--kernel name] [-h|--help]"
+  echo "Where:  [-k|--kernel name] is full name the kernel to build; defaults to the active kernel."
+  echo "Sample: sudo dkms-rebuild -k 6.8.0-87-generic"
   exit
 }
 
@@ -88,9 +86,6 @@ build_module() {
       show "Warning: Symlink '/var/lib/dkms/$mod/kernel-$kernel-x86_64/module' not found. .ko files not copied." | tee -a "$logfile"
     fi
     rm -f /usr/lib/modules/"$kernel"/updates/dkms/*.ko.zst 2>/dev/null || true
-    # Update dependencies and initramfs
-    depmod -a "$kernel"
-    update-initramfs -u -k "$kernel"
   else
     show "DKMS build failed for $mod/$module_version on $kernel. Check $logfile" | tee -a "$logfile"
     exit 3
@@ -108,21 +103,21 @@ if [ -z $kernel ]; then
   kernel=$(uname -r)
 fi
 
-echo "name=$name"
-echo "kernel=$kernel"
+# echo "kernel=$kernel"
 
 if [[ "$EUID" != 0 ]]; then
   printx "This must be run as sudo.\n"
   exit
 fi
 
-if [ ! -d "/var/lib/dkms/$name" ]; then
-  echo "Unable to locate the module '$name' at /var/lib/dkms/$name."
-  exit 1
-else
-  echo "Cleaning module '$name'..."
-  clean_module "$name" "$kernel"
+for dir in /var/lib/dkms/*; do
+  module=$(basename $dir)
+  printx "Building module '$module'..."
+  clean_module "$module" "$kernel"
+  build_module "$module" "$kernel"
+done
 
-  echo "Building module '$name' version '$version'..."
-  build_module "$name" "$kernel"
-fi
+# Update dependencies and initramfs
+depmod -a "$kernel"
+update-initramfs -u -k "$kernel"
+
