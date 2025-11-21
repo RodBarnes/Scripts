@@ -92,12 +92,40 @@ build_module() {
   fi
 }
 
-if [ $# -lt 1 ]; then
+# --------------------
+# ------- MAIN -------
+# --------------------
+
+# Get the arguments
+arg_short=h
+arg_long=help
+arg_opts=$(getopt --options "$arg_short" --long "$arg_long" --name "$0" -- "$@")
+if [ $? != 0 ]; then
   show_syntax
+  exit 1
 fi
 
-name=$1
-kernel=$2
+eval set -- "$arg_opts"
+while true; do
+  case "$1" in
+    -k|--kernel)
+      kernel="$2"
+      shift 2
+      ;;
+    -h|--help)
+      show_syntax
+      shift 1
+      ;;
+    --) # End of options
+      shift
+      break
+      ;;
+    *)
+      echo "Internal error parsing arguments: arg=$1"
+      exit 1
+      ;;
+  esac
+done
 
 if [ -z $kernel ]; then
   kernel=$(uname -r)
